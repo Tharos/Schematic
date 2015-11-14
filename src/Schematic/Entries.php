@@ -18,6 +18,11 @@ class Entries implements Iterator
 	 */
 	private $itemsType;
 
+	/**
+	 * @var array
+	 */
+	private $cachedItems = [];
+
 
 	/**
 	 * @param array $items
@@ -37,9 +42,15 @@ class Entries implements Iterator
 	 */
 	public function current()
 	{
+		$key = $this->key();
+
+		if (array_key_exists($key, $this->cachedItems)) {
+			return $this->cachedItems[$key];
+		}
+
 		$itemType = $this->itemsType;
 
-		return new $itemType(current($this->items));
+		return $this->cachedItems[$key] = new $itemType(current($this->items));
 	}
 
 
