@@ -1,0 +1,19 @@
+{
+	"name": "tharos/schematic",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Vojtěch Kohout",
+			"email": "v.kohout@gmail.com"
+		}
+	],
+	"require-dev": {
+		"nette/tester": "~1.6"
+	},
+	"autoload": {
+		"psr-0": {
+			"Schematic\\": "src/"
+		}
+	}
+}
