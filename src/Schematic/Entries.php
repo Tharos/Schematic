@@ -13,13 +13,20 @@ class Entries implements Iterator
 	 */
 	private $items;
 
+	/**
+	 * @var string
+	 */
+	private $itemsType;
+
 
 	/**
 	 * @param array $items
+	 * @param string|NULL $itemsType
 	 */
-	public function __construct(array $items)
+	public function __construct(array $items, $itemsType = NULL)
 	{
 		$this->items = $items;
+		$this->itemsType = $itemsType !== NULL ? (string) $itemsType : Entry::class;
 
 		$this->rewind();
 	}
@@ -30,7 +37,9 @@ class Entries implements Iterator
 	 */
 	public function current()
 	{
-		return new Entry(current($this->items));
+		$itemType = $this->itemsType;
+
+		return new $itemType(current($this->items));
 	}
 
 

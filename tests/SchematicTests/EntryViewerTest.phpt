@@ -18,8 +18,7 @@ class EntryViewerTest extends TestCase
 
 	public function testView()
 	{
-		/** @var IOrder $order */
-		$order = new Entry([
+		$order = new Order([
 			'id' => 1,
 			'note' => 'please deliver on monday',
 			'approved' => TRUE,
@@ -29,14 +28,12 @@ class EntryViewerTest extends TestCase
 			],
 		]);
 
-		$converter = function (Entry $order) {
-			/** @var IOrder $order */
+		$converter = function (Order $order) {
 			return [
 				'id' => $order->id,
 				'note' => $order->note,
 				'approved' => $order->approved,
-				'orderItems' => EntryViewer::viewEntries($order->orderItems, function (Entry $orderItem) {
-					/** @var IOrderItem $orderItem */
+				'orderItems' => EntryViewer::viewEntries($order->orderItems, function (OrderItem $orderItem) {
 					return [
 						'id' => $orderItem->id
 					];

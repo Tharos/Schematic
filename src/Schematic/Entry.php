@@ -11,6 +11,11 @@ class Entry
 	/**
 	 * @var array
 	 */
+	protected $associationTypes = [];
+
+	/**
+	 * @var array
+	 */
 	private $data;
 
 
@@ -33,9 +38,16 @@ class Entry
 			throw new InvalidArgumentException("Missing field '$name'.");
 		}
 
-		return is_array($this->data[$name])
-			? new Entries($this->data[$name])
-			: $this->data[$name];
+		if (is_array($this->data[$name])) {
+			$associationType = NULL;
+			if (array_key_exists($name, $this->associationTypes)) {
+				$associationType = $this->associationTypes[$name];
+			}
+			return new Entries($this->data[$name], $associationType);
+
+		} else {
+			return $this->data[$name];
+		}
 	}
 
 }

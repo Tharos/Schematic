@@ -2,28 +2,34 @@
 
 namespace SchematicTests;
 
+use Schematic\Entry;
+
 
 /**
  * @property-read int $id
  */
-interface Identified
+abstract class Identified extends Entry
 {
 
 }
 
 
 /**
- * @property-read IOrderItem[] $orderItems
+ * @property-read OrderItem[] $orderItems
  * @property-read string $note
  * @property-read bool $approved
  */
-interface IOrder extends Identified
+class Order extends Identified
 {
+
+	protected $associationTypes = [
+		'orderItems' => OrderItem::class,
+	];
 
 }
 
 
-interface IOrderItem extends Identified
+class OrderItem extends Identified
 {
 
 }
