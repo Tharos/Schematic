@@ -6,7 +6,6 @@ require_once __DIR__ . '/bootstrap.php';
 
 use InvalidArgumentException;
 use Schematic\Entries;
-use Schematic\Entry;
 use Tester\Assert;
 use Tester\TestCase;
 
@@ -21,8 +20,7 @@ class EntryTest extends TestCase
 	{
 		$id = 1;
 
-		/** @var IOrder $order */
-		$order = new Entry(['id' => $id]);
+		$order = new Order(['id' => $id]);
 
 		Assert::same($id, $order->id);
 	}
@@ -30,8 +28,7 @@ class EntryTest extends TestCase
 
 	public function testInvalidFieldAccess()
 	{
-		/** @var IOrder $order */
-		$order = new Entry([]);
+		$order = new Order([]);
 
 		Assert::exception(function () use ($order) {
 			$order->created;
@@ -41,8 +38,7 @@ class EntryTest extends TestCase
 
 	public function testEntiresAccess()
 	{
-		/** @var IOrder $order */
-		$order = new Entry(['orderItems' => [
+		$order = new Order(['orderItems' => [
 			['id' => 1],
 			['id' => 2],
 		]]);
