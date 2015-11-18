@@ -4,7 +4,6 @@ namespace SchematicTests;
 
 require_once __DIR__ . '/bootstrap.php';
 
-use Schematic\Entry;
 use Schematic\EntryViewer;
 use Tester\Assert;
 use Tester\TestCase;
