@@ -42,7 +42,7 @@ class Entry
 			return $this->data[$name];
 
 		} else {
-			$associationType = NULL;
+			$associationType = self::class;
 			if (array_key_exists($name, $this->associationTypes)) {
 				$associationType = $this->associationTypes[$name];
 			}
