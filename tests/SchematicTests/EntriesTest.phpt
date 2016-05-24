@@ -52,6 +52,21 @@ class EntriesTest extends TestCase
 	}
 
 
+	public function testCount()
+	{
+		Assert::count(2, self::createEntries());
+	}
+
+
+	public function testToArray()
+	{
+		$entries = self::createEntries();
+
+		Assert::type('array', $entries->toArray());
+		Assert::count(2, $entries->toArray());
+	}
+
+
 	/**
 	 * @return Entries
 	 */

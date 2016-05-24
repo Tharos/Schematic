@@ -2,10 +2,11 @@
 
 namespace Schematic;
 
+use Countable;
 use Iterator;
 
 
-class Entries implements Iterator
+class Entries implements Countable, Iterator
 {
 
 	/**
@@ -34,6 +35,15 @@ class Entries implements Iterator
 		$this->itemsType = $itemsType;
 
 		$this->rewind();
+	}
+
+
+	/**
+	 * @return Entry[]
+	 */
+	public function toArray()
+	{
+		return iterator_to_array($this);
 	}
 
 
@@ -81,6 +91,15 @@ class Entries implements Iterator
 	public function rewind()
 	{
 		reset($this->items);
+	}
+
+
+	/**
+	 * @return int
+	 */
+	public function count()
+	{
+		return count($this->items);
 	}
 
 }
