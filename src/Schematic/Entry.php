@@ -38,16 +38,19 @@ class Entry
 			throw new InvalidArgumentException("Missing field '$name'.");
 		}
 
-		if ($this->data[$name] instanceof Entries || !is_array($this->data[$name])) {
+		if (!array_key_exists($name, $this->associationTypes)) {
 			return $this->data[$name];
 
 		} else {
-			$associationType = self::class;
-			if (array_key_exists($name, $this->associationTypes)) {
-				$associationType = $this->associationTypes[$name];
-			}
+			$associationType = $this->associationTypes[$name];
 
-			return $this->data[$name] = new Entries($this->data[$name], $associationType);
+			$this->data[$name] = is_array($associationType) ?
+				new Entries($this->data[$name], reset($associationType)) :
+				new $associationType($this->data[$name]);
+
+			unset($this->associationTypes[$name]);
+
+			return $this->data[$name];
 		}
 	}
 

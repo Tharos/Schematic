@@ -23,7 +23,7 @@ class Order extends Identified
 {
 
 	protected $associationTypes = [
-		'orderItems' => OrderItem::class,
+		'orderItems' => [OrderItem::class],
 	];
 
 }

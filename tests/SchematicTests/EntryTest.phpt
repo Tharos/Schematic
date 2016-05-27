@@ -44,7 +44,7 @@ class EntryTest extends TestCase
 		]]);
 
 		Assert::type(Entries::class, $order->orderItems);
-		Assert::count(2, iterator_to_array($order->orderItems));
+		Assert::count(2, $order->orderItems);
 	}
 
 }
