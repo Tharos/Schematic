@@ -3,6 +3,7 @@
 namespace Schematic;
 
 use Closure;
+use Iterator;
 use Traversable;
 
 
@@ -23,17 +24,13 @@ class EntryViewer
 	/**
 	 * @param array|Traversable $entries
 	 * @param Closure $singleEntryConverter
-	 * @return array
+	 * @return Iterator
 	 */
 	public static function viewEntries($entries, Closure $singleEntryConverter)
 	{
-		$result = [];
-
-		foreach ($entries as $entry) {
-			$result[] = self::viewEntry($entry, $singleEntryConverter);
+		foreach ($entries as $key => $entry) {
+			yield $key => self::viewEntry($entry, $singleEntryConverter);
 		}
-
-		return $result;
 	}
 
 }
