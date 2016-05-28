@@ -18,6 +18,11 @@ class Entry
 	 */
 	private $data;
 
+	/**
+	 * @var array
+	 */
+	private $initializedAssociations = [];
+
 
 	/**
 	 * @param array $data
@@ -38,19 +43,17 @@ class Entry
 			throw new InvalidArgumentException("Missing field '$name'.");
 		}
 
-		if (!array_key_exists($name, $this->associationTypes)) {
+		if (!isset($this->associationTypes[$name]) || isset($this->initializedAssociations[$name])) {
 			return $this->data[$name];
 
 		} else {
+			$this->initializedAssociations[$name] = TRUE;
+
 			$associationType = $this->associationTypes[$name];
 
-			$this->data[$name] = is_array($associationType) ?
+			return $this->data[$name] = is_array($associationType) ?
 				new Entries($this->data[$name], reset($associationType)) :
 				new $associationType($this->data[$name]);
-
-			unset($this->associationTypes[$name]);
-
-			return $this->data[$name];
 		}
 	}
 
