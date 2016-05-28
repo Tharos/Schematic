@@ -4,6 +4,7 @@ namespace SchematicTests;
 
 require_once __DIR__ . '/bootstrap.php';
 
+use Iterator;
 use Schematic\Entries;
 use Schematic\Entry;
 use Tester\Assert;
@@ -16,39 +17,12 @@ use Tester\TestCase;
 class EntriesTest extends TestCase
 {
 
-	public function testCurrent()
+	public function testGetIterator()
 	{
 		$entries = self::createEntries();
 
-		Assert::type(Entry::class, $entries->current());
-	}
-
-
-	public function testKey()
-	{
-		$entries = self::createEntries();
-
-		Assert::same(5, $entries->key());
-
-		$entries->next();
-		Assert::same(6, $entries->key());
-	}
-
-
-	public function testValidity()
-	{
-		$entries = self::createEntries();
-
-		Assert::true($entries->valid());
-
-		$entries->next();
-		Assert::true($entries->valid());
-
-		$entries->next();
-		Assert::false($entries->valid());
-
-		$entries->rewind();
-		Assert::true($entries->valid());
+		Assert::type(Iterator::class, $entries->getIterator());
+		Assert::type(Entry::class, $entries->getIterator()->current());
 	}
 
 

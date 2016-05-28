@@ -4,9 +4,9 @@ namespace Schematic;
 
 use Countable;
 use Iterator;
+use IteratorAggregate;
 
-
-class Entries implements Countable, Iterator
+class Entries implements Countable, IteratorAggregate
 {
 
 	/**
@@ -33,8 +33,6 @@ class Entries implements Countable, Iterator
 	{
 		$this->items = $items;
 		$this->itemsType = $itemsType;
-
-		$this->rewind();
 	}
 
 
@@ -43,56 +41,23 @@ class Entries implements Countable, Iterator
 	 */
 	public function toArray()
 	{
-		return iterator_to_array($this);
+		return iterator_to_array($this->getIterator());
 	}
-
 
 	/**
-	 * @return Entry
+	 * @return Iterator
 	 */
-	public function current()
-	{
-		$key = $this->key();
-
-		if (array_key_exists($key, $this->cachedItems)) {
-			return $this->cachedItems[$key];
-		}
-
-		$itemType = $this->itemsType;
-
-		return $this->cachedItems[$key] = new $itemType(current($this->items));
-	}
-
-
-	public function next()
-	{
-		next($this->items);
-	}
-
-
-	/**
-	 * @return mixed
-	 */
-	public function key()
-	{
-		return key($this->items);
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	public function valid()
-	{
-		return array_key_exists(key($this->items), $this->items);
-	}
-
-
-	public function rewind()
+	public function getIterator()
 	{
 		reset($this->items);
+		$itemType = $this->itemsType;
+		foreach ($this->items as $key => $item) {
+			if (!array_key_exists($key, $this->cachedItems)) {
+				$this->cachedItems[$key] = new $itemType($item);
+			}
+			yield $key => $this->cachedItems[$key];
+		}
 	}
-
 
 	/**
 	 * @return int
