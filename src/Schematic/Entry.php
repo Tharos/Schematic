@@ -16,7 +16,17 @@ class Entry
 	/**
 	 * @var array
 	 */
+	protected $embeddedEntries = [];
+
+	/**
+	 * @var array
+	 */
 	private $initializedAssociations = [];
+
+	/**
+	 * @var array
+	 */
+	private $embeddedEntriesIndex = [];
 
 	/**
 	 * @var array
@@ -41,6 +51,8 @@ class Entry
 
 		$this->data = $data;
 		$this->entriesClass = $entriesClass;
+
+		$this->buildEmbeddedEntriesIndex();
 	}
 
 
@@ -50,23 +62,61 @@ class Entry
 	 */
 	public function __get($name)
 	{
-		if (!array_key_exists($name, $this->data)) {
-			throw new InvalidArgumentException("Missing field '$name'.");
+		if (!isset($this->associationTypes[$name]) || isset($this->initializedAssociations[$name])) {
+			if (!array_key_exists($name, $this->data)) {
+				throw new InvalidArgumentException("Missing field '$name'.");
+			}
+
+			return $this->data[$name];
 		}
 
-		if (!isset($this->associationTypes[$name]) || isset($this->initializedAssociations[$name])) {
-			return $this->data[$name];
+		$this->initializedAssociations[$name] = TRUE;
+
+		$associationType = $this->associationTypes[$name];
+		$entriesClass = $this->entriesClass;
+
+		if (!isset($this->embeddedEntriesIndex[$name])) {
+			if (!array_key_exists($name, $this->data)) {
+				throw new InvalidArgumentException("Missing field '$name'.");
+			}
+			$data = $this->data[$name];
 
 		} else {
-			$this->initializedAssociations[$name] = TRUE;
+			$data = [];
+			foreach ($this->embeddedEntriesIndex[$name] as $field => $prefixedField) {
+				if (!array_key_exists($prefixedField, $this->data)) {
+					throw new InvalidArgumentException("Missing field '$prefixedField'.");
+				}
+				$data[$field] = $this->data[$prefixedField];
+			}
+		}
 
-			$associationType = $this->associationTypes[$name];
+		return $this->data[$name] = is_array($associationType) ?
+			new $entriesClass($data, reset($associationType)) :
+			new $associationType($data, $this->entriesClass);
+	}
 
-			$entriesClass = $this->entriesClass;
 
-			return $this->data[$name] = is_array($associationType) ?
-				new $entriesClass($this->data[$name], reset($associationType)) :
-				new $associationType($this->data[$name], $this->entriesClass);
+	private function buildEmbeddedEntriesIndex()
+	{
+		foreach ($this->embeddedEntries as $name => $fields) {
+			$nameWithoutPeriod = $name;
+			$prefix = '';
+
+			$periodPosition = strpos($name, '.');
+			if ($periodPosition !== FALSE) {
+				$nameWithoutPeriod = substr($name, 0, $periodPosition);
+				$prefix = substr($name, $periodPosition + 1);
+
+				if ($prefix === FALSE) { // trailing period
+					$prefix = $nameWithoutPeriod . '_';
+				}
+			}
+
+			$this->embeddedEntriesIndex[$nameWithoutPeriod] = [];
+			foreach ($fields as $field) {
+				$this->embeddedEntriesIndex[$nameWithoutPeriod][$field] = $prefix . $field;
+			}
 		}
 	}
 
