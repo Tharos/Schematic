@@ -2,11 +2,10 @@
 
 namespace Schematic;
 
-use Countable;
 use Iterator;
 
 
-class Entries implements Countable, Iterator
+class Entries implements Iterator, IEntries
 {
 
 	/**
@@ -60,7 +59,7 @@ class Entries implements Countable, Iterator
 
 		$itemType = $this->itemsType;
 
-		return $this->cachedItems[$key] = new $itemType(current($this->items));
+		return $this->cachedItems[$key] = new $itemType(current($this->items), get_called_class());
 	}
 
 
