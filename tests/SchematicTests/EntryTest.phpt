@@ -83,6 +83,29 @@ class EntryTest extends TestCase
 		Assert::type(CustomEntries::class, $firstOrderItem->tags);
 	}
 
+
+	public function testEmbeddedEntries()
+	{
+		$book = new Book([
+			'id' => 12,
+			'title' => 'PHP: The Bad Parts',
+			'name' => 'bestseller',
+			'customer_id' => 20,
+			'author_firstname' => 'John',
+			'author_surname' => 'Doe',
+		]);
+
+		Assert::type(Tag::class, $book->tag);
+		Assert::same('bestseller', $book->tag->name);
+
+		Assert::type(Customer::class, $book->customer);
+		Assert::same(20, $book->customer->id);
+
+		Assert::type(Author::class, $book->author);
+		Assert::same('John', $book->author->firstname);
+		Assert::same('Doe', $book->author->surname);
+	}
+
 }
 
 

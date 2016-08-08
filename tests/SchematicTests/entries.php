@@ -65,3 +65,37 @@ class CustomEntries extends Entries
 {
 
 }
+
+
+/**
+ * @property-read string $firstname
+ * @property-read string $surname
+ */
+class Author extends Identified
+{
+
+}
+
+
+/**
+ * @property-read Tag $tag
+ * @property-read Customer $customer
+ * @property-read Author $author
+ * @property-read string $title
+ */
+class Book extends Identified
+{
+
+	protected $associationTypes = [
+		'tag' => Tag::class,
+		'customer' => Customer::class,
+		'author' => Author::class,
+	];
+
+	protected $embeddedEntries = [
+		'tag' => ['name'],
+		'customer.' => ['id'],
+		'author.author_' => ['firstname', 'surname'],
+	];
+
+}
