@@ -95,7 +95,7 @@ class Book extends Identified
 	protected $embeddedEntries = [
 		'tag' => ['name'],
 		'customer.' => ['id'],
-		'author.author_' => ['firstname', 'surname'],
+		'author.a_' => ['firstname', 'surname'],
 	];
 
 }

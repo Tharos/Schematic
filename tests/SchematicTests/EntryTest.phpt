@@ -91,8 +91,8 @@ class EntryTest extends TestCase
 			'title' => 'PHP: The Bad Parts',
 			'name' => 'bestseller',
 			'customer_id' => 20,
-			'author_firstname' => 'John',
-			'author_surname' => 'Doe',
+			'a_firstname' => 'John',
+			'a_surname' => 'Doe',
 		]);
 
 		Assert::type(Tag::class, $book->tag);
