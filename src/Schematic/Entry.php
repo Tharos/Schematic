@@ -92,10 +92,11 @@ class Entry
 			$periodPosition = strpos($name, '.');
 			if ($periodPosition !== FALSE) {
 				$nameWithoutPeriod = substr($name, 0, $periodPosition);
-				$prefix = substr($name, $periodPosition + 1);
 
-				if ($prefix === FALSE) { // trailing period
+				if (strlen($name) === $periodPosition + 1) {
 					$prefix = $nameWithoutPeriod . '_';
+				} else {
+					$prefix = substr($name, $periodPosition + 1);
 				}
 			}
 
