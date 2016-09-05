@@ -8,25 +8,24 @@ use InvalidArgumentException;
 class Entry
 {
 
-	/**
-	 * @var array
-	 */
-	protected $associationTypes = [];
+	const INDEX_ENTRYCLASS = 0;
+	const INDEX_MULTIPLICITY = 1;
+	const INDEX_EMBEDDING = 2;
 
 	/**
 	 * @var array
 	 */
-	protected $embeddedEntries = [];
+	protected static $associations = [];
+
+	/**
+	 * @var array entryClass => [INDEX_ENTRYCLASS => relatedEntryClass, INDEX_MULTIPLICITY => multiplicity, INDEX_EMBEDDING => embedding]
+	 */
+	private static $parsedAssociations = [];
 
 	/**
 	 * @var array
 	 */
 	private $initializedAssociations = [];
-
-	/**
-	 * @var array
-	 */
-	private $embeddedEntriesIndex = [];
 
 	/**
 	 * @var array
@@ -45,14 +44,42 @@ class Entry
 	 */
 	public function __construct(array $data, $entriesClass = Entries::class)
 	{
-		if (!is_a($entriesClass, IEntries::class, TRUE)) {
+		if ($entriesClass !== Entries::class && !is_a($entriesClass, IEntries::class, TRUE)) {
 			throw new InvalidArgumentException('Entries class must implement IEntries interface.');
 		}
 
 		$this->data = $data;
 		$this->entriesClass = $entriesClass;
 
-		$this->buildEmbeddedEntriesIndex();
+		if (!array_key_exists($calledClass = get_called_class(), self::$parsedAssociations)) {
+			self::parseAssociations($calledClass);
+		}
+	}
+
+
+	/**
+	 * @param string $class
+	 */
+	private static function parseAssociations($class)
+	{
+		self::$parsedAssociations[$class] = [];
+
+		foreach (static::$associations as $association => $entryClass) {
+			$matches = [];
+			$result = preg_match('#^([^.[\]]+)(\.[^.[\]]*)?(\[\])?$#', $association, $matches);
+
+			if ($result === 0 || (!empty($matches[2]) && !empty($matches[3]))) {
+				throw new InvalidArgumentException('Invalid association definition given: ' . $association);
+			}
+
+			self::$parsedAssociations[$class][$matches[1]] = [
+				self::INDEX_ENTRYCLASS => $entryClass,
+				self::INDEX_MULTIPLICITY => !empty($matches[3]),
+				self::INDEX_EMBEDDING => !empty($matches[2]) ?
+					($matches[2] === '.' ? $matches[1] . '_' : substr($matches[2], 1)) :
+					FALSE,
+			];
+		}
 	}
 
 
@@ -62,64 +89,48 @@ class Entry
 	 */
 	public function __get($name)
 	{
-		if (!isset($this->associationTypes[$name]) || isset($this->initializedAssociations[$name])) {
+		$calledClass = get_called_class();
+
+		if (!isset(self::$parsedAssociations[$calledClass][$name]) || isset($this->initializedAssociations[$name])) {
 			return $this->readData($name);
 		}
 
 		$this->initializedAssociations[$name] = TRUE;
 
-		$data = isset($this->embeddedEntriesIndex[$name]) ? $this->readEmbeddedEntry($name) : $this->readData($name);
+		$association = self::$parsedAssociations[$calledClass][$name];
+
+		$data = $association[self::INDEX_EMBEDDING] !== FALSE ?
+			$this->readEmbeddedEntry($association[self::INDEX_EMBEDDING]) :
+			$this->readData($name);
 
 		if ($data === NULL) {
 			return $this->data[$name] = NULL;
 		}
 
-		$associationType = $this->associationTypes[$name];
+		$entryClass = $association[self::INDEX_ENTRYCLASS];
 		$entriesClass = $this->entriesClass;
 
-		return $this->data[$name] = is_array($associationType) ?
-			new $entriesClass($data, reset($associationType)) :
-			new $associationType($data, $this->entriesClass);
-	}
-
-
-	private function buildEmbeddedEntriesIndex()
-	{
-		foreach ($this->embeddedEntries as $name => $fields) {
-			$nameWithoutPeriod = $name;
-			$prefix = '';
-
-			$periodPosition = strpos($name, '.');
-			if ($periodPosition !== FALSE) {
-				$nameWithoutPeriod = substr($name, 0, $periodPosition);
-
-				if (strlen($name) === $periodPosition + 1) {
-					$prefix = $nameWithoutPeriod . '_';
-				} else {
-					$prefix = substr($name, $periodPosition + 1);
-				}
-			}
-
-			$this->embeddedEntriesIndex[$nameWithoutPeriod] = [];
-			foreach ($fields as $field) {
-				$this->embeddedEntriesIndex[$nameWithoutPeriod][$field] = $prefix . $field;
-			}
-		}
+		return $this->data[$name] = $association[self::INDEX_MULTIPLICITY] ?
+			new $entriesClass($data, $entryClass) :
+			new $entryClass($data, $this->entriesClass);
 	}
 
 
 	/**
-	 * @param string $name
+	 * @param string $prefix
 	 * @return array|NULL
 	 */
-	private function readEmbeddedEntry($name)
+	private function readEmbeddedEntry($prefix)
 	{
 		$values = [];
 		$isEmpty = TRUE;
-		foreach ($this->embeddedEntriesIndex[$name] as $field => $prefixedField) {
-			$values[$field] = $this->readData($prefixedField);
+		foreach ($this->data as $field => $value) {
+			if (strpos($field, $prefix) !== 0 || strlen($field) <= strlen($prefix)) {
+				continue;
+			}
+			$values[substr($field, strlen($prefix))] = $value;
 
-			if ($values[$field] !== NULL) {
+			if ($value !== NULL) {
 				$isEmpty = FALSE;
 			}
 		}
@@ -129,16 +140,16 @@ class Entry
 
 
 	/**
-	 * @param string $name
+	 * @param string $field
 	 * @return mixed
 	 */
-	private function readData($name)
+	private function readData($field)
 	{
-		if (!array_key_exists($name, $this->data)) {
-			throw new InvalidArgumentException("Missing field '$name'.");
+		if (!array_key_exists($field, $this->data)) {
+			throw new InvalidArgumentException("Missing field '$field'.");
 		}
 
-		return $this->data[$name];
+		return $this->data[$field];
 	}
 
 }

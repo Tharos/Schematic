@@ -16,7 +16,7 @@ class Entries implements Iterator, IEntries
 	/**
 	 * @var string
 	 */
-	private $itemsType;
+	private $entryClass;
 
 	/**
 	 * @var array
@@ -26,12 +26,12 @@ class Entries implements Iterator, IEntries
 
 	/**
 	 * @param array $items
-	 * @param string $itemsType
+	 * @param string $entryClass
 	 */
-	public function __construct(array $items, $itemsType = Entry::class)
+	public function __construct(array $items, $entryClass = Entry::class)
 	{
 		$this->items = $items;
-		$this->itemsType = $itemsType;
+		$this->entryClass = $entryClass;
 
 		$this->rewind();
 	}
@@ -57,9 +57,9 @@ class Entries implements Iterator, IEntries
 			return $this->cachedItems[$key];
 		}
 
-		$itemType = $this->itemsType;
+		$entryClass = $this->entryClass;
 
-		return $this->cachedItems[$key] = new $itemType(current($this->items), get_called_class());
+		return $this->cachedItems[$key] = new $entryClass(current($this->items), get_called_class());
 	}
 
 
