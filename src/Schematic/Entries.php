@@ -2,6 +2,8 @@
 
 namespace Schematic;
 
+use Closure;
+use InvalidArgumentException;
 use Iterator;
 
 
@@ -51,15 +53,7 @@ class Entries implements Iterator, IEntries
 	 */
 	public function current()
 	{
-		$key = $this->key();
-
-		if (array_key_exists($key, $this->cachedItems)) {
-			return $this->cachedItems[$key];
-		}
-
-		$entryClass = $this->entryClass;
-
-		return $this->cachedItems[$key] = new $entryClass(current($this->items), get_called_class());
+		return $this->get($this->key());
 	}
 
 
@@ -99,6 +93,82 @@ class Entries implements Iterator, IEntries
 	public function count()
 	{
 		return count($this->items);
+	}
+
+
+	/**
+	 * @param int|string $key
+	 * @return bool
+	 */
+	public function has($key)
+	{
+		return array_key_exists($key, $this->items);
+	}
+
+
+	/**
+	 * @param int|string $key
+	 * @return Entry
+	 */
+	public function get($key)
+	{
+		$this->validateKey($key);
+
+		if (array_key_exists($key, $this->cachedItems)) {
+			return $this->cachedItems[$key];
+		}
+
+		$entryClass = $this->entryClass;
+
+		return $this->cachedItems[$key] = new $entryClass($this->items[$key], get_called_class());
+	}
+
+
+	/**
+	 * @param int|string $key
+	 * @return static
+	 */
+	public function remove($key)
+	{
+		$this->validateKey($key);
+
+		$items = $this->items;
+		unset($items[$key]);
+
+		return new static($items, $this->entryClass);
+	}
+
+
+	/**
+	 * @param int[]|string[] $keys
+	 * @return static
+	 */
+	public function reduceTo(array $keys)
+	{
+		$items = array_intersect_key($this->items, array_flip($keys));
+
+		return new static($items, $this->entryClass);
+	}
+
+
+	/**
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function transform(Closure $callback)
+	{
+		return new static($callback($this->items), $this->entryClass);
+	}
+
+
+	/**
+	 * @param int|string $key
+	 */
+	private function validateKey($key)
+	{
+		if (!array_key_exists($key, $this->items)) {
+			throw new InvalidArgumentException("Missing entry with key $key.");
+		}
 	}
 
 }
