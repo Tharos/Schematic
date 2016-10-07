@@ -25,9 +25,9 @@ abstract class Identified extends Entry
 class Order extends Identified
 {
 
-	protected $associationTypes = [
+	protected static $associations = [
 		'customer' => Customer::class,
-		'orderItems' => [OrderItem::class],
+		'orderItems[]' => OrderItem::class,
 	];
 
 }
@@ -39,8 +39,8 @@ class Order extends Identified
 class OrderItem extends Identified
 {
 
-	protected $associationTypes = [
-		'tags' => [Tag::class],
+	protected static $associations = [
+		'tags[]' => Tag::class,
 	];
 
 }
@@ -86,16 +86,10 @@ class Author extends Identified
 class Book extends Identified
 {
 
-	protected $associationTypes = [
-		'tag' => Tag::class,
-		'customer' => Customer::class,
-		'author' => Author::class,
-	];
-
-	protected $embeddedEntries = [
-		'tag' => ['name'],
-		'customer.' => ['id'],
-		'author.a_' => ['firstname', 'surname'],
+	protected static $associations = [
+		'tag.' => Tag::class,
+		'customer.' => Customer::class,
+		'author.a_' => Author::class,
 	];
 
 }

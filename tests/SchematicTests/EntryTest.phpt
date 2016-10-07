@@ -36,7 +36,7 @@ class EntryTest extends TestCase
 	}
 
 
-	public function testEntiresAccess()
+	public function testEntriesAccess()
 	{
 		$order = new Order([
 			'customer' => [
@@ -89,7 +89,7 @@ class EntryTest extends TestCase
 		$book = new Book([
 			'id' => 12,
 			'title' => 'PHP: The Bad Parts',
-			'name' => 'bestseller',
+			'tag_name' => 'bestseller',
 			'customer_id' => 20,
 			'a_firstname' => 'John',
 			'a_surname' => 'Doe',
