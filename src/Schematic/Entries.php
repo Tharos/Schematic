@@ -2,10 +2,12 @@
 
 namespace Schematic;
 
+use Closure;
+use InvalidArgumentException;
 use Iterator;
 
 
-class Entries implements Iterator
+class Entries implements Iterator, IEntries
 {
 
 	/**
@@ -13,15 +15,36 @@ class Entries implements Iterator
 	 */
 	private $items;
 
+	/**
+	 * @var string
+	 */
+	private $entryClass;
+
+	/**
+	 * @var array
+	 */
+	private $cachedItems = [];
+
 
 	/**
 	 * @param array $items
+	 * @param string $entryClass
 	 */
-	public function __construct(array $items)
+	public function __construct(array $items, $entryClass = Entry::class)
 	{
 		$this->items = $items;
+		$this->entryClass = $entryClass;
 
 		$this->rewind();
+	}
+
+
+	/**
+	 * @return Entry[]
+	 */
+	public function toArray()
+	{
+		return iterator_to_array($this);
 	}
 
 
@@ -30,7 +53,7 @@ class Entries implements Iterator
 	 */
 	public function current()
 	{
-		return new Entry(current($this->items));
+		return $this->get($this->key());
 	}
 
 
@@ -61,6 +84,91 @@ class Entries implements Iterator
 	public function rewind()
 	{
 		reset($this->items);
+	}
+
+
+	/**
+	 * @return int
+	 */
+	public function count()
+	{
+		return count($this->items);
+	}
+
+
+	/**
+	 * @param int|string $key
+	 * @return bool
+	 */
+	public function has($key)
+	{
+		return array_key_exists($key, $this->items);
+	}
+
+
+	/**
+	 * @param int|string $key
+	 * @return Entry
+	 */
+	public function get($key)
+	{
+		$this->validateKey($key);
+
+		if (array_key_exists($key, $this->cachedItems)) {
+			return $this->cachedItems[$key];
+		}
+
+		$entryClass = $this->entryClass;
+
+		return $this->cachedItems[$key] = new $entryClass($this->items[$key], get_called_class());
+	}
+
+
+	/**
+	 * @param int|string $key
+	 * @return static
+	 */
+	public function remove($key)
+	{
+		$this->validateKey($key);
+
+		$items = $this->items;
+		unset($items[$key]);
+
+		return new static($items, $this->entryClass);
+	}
+
+
+	/**
+	 * @param int[]|string[] $keys
+	 * @return static
+	 */
+	public function reduceTo(array $keys)
+	{
+		$items = array_intersect_key($this->items, array_flip($keys));
+
+		return new static($items, $this->entryClass);
+	}
+
+
+	/**
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function transform(Closure $callback)
+	{
+		return new static($callback($this->items), $this->entryClass);
+	}
+
+
+	/**
+	 * @param int|string $key
+	 */
+	private function validateKey($key)
+	{
+		if (!array_key_exists($key, $this->items)) {
+			throw new InvalidArgumentException("Missing entry with key $key.");
+		}
 	}
 
 }
