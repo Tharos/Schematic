@@ -12,25 +12,31 @@ class EntryViewer
 	/**
 	 * @param mixed $entry
 	 * @param Closure $converter
-	 * @return mixed
+	 * @return object|NULL
 	 */
 	public static function viewEntry($entry, Closure $converter)
 	{
-		return (object) call_user_func($converter, $entry);
+		$entry = call_user_func($converter, $entry);
+
+		return $entry !== NULL ? (object) $entry : NULL;
 	}
 
 
 	/**
 	 * @param array|Traversable $entries
 	 * @param Closure $singleEntryConverter
-	 * @return array
+	 * @return object[]
 	 */
 	public static function viewEntries($entries, Closure $singleEntryConverter)
 	{
 		$result = [];
 
 		foreach ($entries as $entry) {
-			$result[] = self::viewEntry($entry, $singleEntryConverter);
+			$entry = self::viewEntry($entry, $singleEntryConverter);
+
+			if ($entry !== NULL) {
+				$result[] = $entry;
+			}
 		}
 
 		return $result;
