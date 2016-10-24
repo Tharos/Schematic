@@ -132,10 +132,7 @@ class Entries implements Iterator, IEntries
 	{
 		$this->validateKeys($keys);
 
-		$items = $this->items;
-		foreach ($keys as $key) {
-			unset($items[$key]);
-		}
+		$items = array_diff_key($this->items, array_flip($keys));
 
 		return new static($items, $this->entryClass);
 	}
