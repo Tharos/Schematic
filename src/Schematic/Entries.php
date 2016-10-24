@@ -145,7 +145,14 @@ class Entries implements Iterator, IEntries
 	 */
 	public function reduceTo(array $keys)
 	{
-		$items = array_intersect_key($this->items, array_flip($keys));
+		$keys = array_flip($keys);
+
+		$missingKeys = array_diff_key($keys, $this->items);
+		if ($missingKeys !== []) {
+			throw new InvalidArgumentException('Missing entries with keys: ' . implode(', ', array_keys($missingKeys)) . '.');
+		}
+
+		$items = array_intersect_key($this->items, $keys);
 
 		return new static($items, $this->entryClass);
 	}

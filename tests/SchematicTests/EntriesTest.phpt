@@ -116,6 +116,12 @@ class EntriesTest extends TestCase
 
 		Assert::false($entries->has(5));
 		Assert::true($entries->has(6));
+
+		$entries = self::createEntries();
+
+		Assert::exception(function () use ($entries) {
+			$entries->reduceTo([1, 2, 5]);
+		}, InvalidArgumentException::class, 'Missing entries with keys: 1, 2.');
 	}
 
 
