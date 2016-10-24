@@ -125,34 +125,31 @@ class Entries implements Iterator, IEntries
 
 
 	/**
-	 * @param int|string $key
+	 * @param array $keys
 	 * @return static
 	 */
-	public function remove($key)
+	public function remove(...$keys)
 	{
-		$this->validateKey($key);
+		$this->validateKeys($keys);
 
 		$items = $this->items;
-		unset($items[$key]);
+		foreach ($keys as $key) {
+			unset($items[$key]);
+		}
 
 		return new static($items, $this->entryClass);
 	}
 
 
 	/**
-	 * @param int[]|string[] $keys
+	 * @param array $keys
 	 * @return static
 	 */
-	public function reduceTo(array $keys)
+	public function reduceTo(...$keys)
 	{
-		$keys = array_flip($keys);
+		$this->validateKeys($keys);
 
-		$missingKeys = array_diff_key($keys, $this->items);
-		if ($missingKeys !== []) {
-			throw new InvalidArgumentException('Missing entries with keys: ' . implode(', ', array_keys($missingKeys)) . '.');
-		}
-
-		$items = array_intersect_key($this->items, $keys);
+		$items = array_intersect_key($this->items, array_flip($keys));
 
 		return new static($items, $this->entryClass);
 	}
@@ -175,6 +172,20 @@ class Entries implements Iterator, IEntries
 	{
 		if (!array_key_exists($key, $this->items)) {
 			throw new InvalidArgumentException("Missing entry with key $key.");
+		}
+	}
+
+
+	/**
+	 * @param array $keys
+	 */
+	private function validateKeys($keys)
+	{
+		$keys = array_flip($keys);
+
+		$missingKeys = array_diff_key($keys, $this->items);
+		if ($missingKeys !== []) {
+			throw new InvalidArgumentException('Missing entries with keys: ' . implode(', ', array_keys($missingKeys)) . '.');
 		}
 	}
 
