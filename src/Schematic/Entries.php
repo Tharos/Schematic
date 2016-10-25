@@ -154,11 +154,12 @@ class Entries implements Iterator, IEntries
 
 	/**
 	 * @param Closure $callback
+	 * @param string|NULL $entryClass
 	 * @return static
 	 */
-	public function transform(Closure $callback)
+	public function transform(Closure $callback, $entryClass = NULL)
 	{
-		return new static($callback($this->items), $this->entryClass);
+		return new static($callback($this->items), $entryClass !== NULL ? $entryClass : $this->entryClass);
 	}
 
 

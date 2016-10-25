@@ -195,10 +195,11 @@ class EntriesTest extends TestCase
 			$data[8] = ['id' => 3];
 
 			return $data;
-		});
+		}, Tag::class);
 
 		Assert::false($entries->has(5));
 		Assert::true($entries->has(8));
+		Assert::type(Tag::class, $entries->get(8));
 	}
 
 }
