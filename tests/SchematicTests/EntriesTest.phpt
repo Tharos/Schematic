@@ -17,6 +17,19 @@ use Tester\TestCase;
 class EntriesTest extends TestCase
 {
 
+	/**
+	 * @return Entries
+	 */
+	private static function createEntries()
+	{
+		return new Entries([
+			5 => ['id' => 1],
+			6 => ['id' => 2],
+			7 => ['id' => 3],
+		]);
+	}
+
+
 	public function testCurrent()
 	{
 		$entries = self::createEntries();
@@ -46,6 +59,9 @@ class EntriesTest extends TestCase
 		Assert::true($entries->valid());
 
 		$entries->next();
+		Assert::true($entries->valid());
+
+		$entries->next();
 		Assert::false($entries->valid());
 
 		$entries->rewind();
@@ -55,7 +71,7 @@ class EntriesTest extends TestCase
 
 	public function testCount()
 	{
-		Assert::count(2, self::createEntries());
+		Assert::count(3, self::createEntries());
 	}
 
 
@@ -64,7 +80,7 @@ class EntriesTest extends TestCase
 		$entries = self::createEntries();
 
 		Assert::type('array', $entries->toArray());
-		Assert::count(2, $entries->toArray());
+		Assert::count(3, $entries->toArray());
 	}
 
 
@@ -75,7 +91,7 @@ class EntriesTest extends TestCase
 		Assert::true($entries->has(5));
 		Assert::true($entries->has(6));
 
-		Assert::false($entries->has(7));
+		Assert::false($entries->has(8));
 		Assert::false($entries->has(1));
 	}
 
@@ -88,8 +104,8 @@ class EntriesTest extends TestCase
 		Assert::equal(new Entry(['id' => 2]), $entries->get(6));
 
 		Assert::exception(function () use ($entries) {
-			$entries->get(7);
-		}, InvalidArgumentException::class, 'Missing entry with key 7.');
+			$entries->get(8);
+		}, InvalidArgumentException::class, 'Missing entry with key 8.');
 	}
 
 
@@ -102,6 +118,32 @@ class EntriesTest extends TestCase
 		$entries = $entries->remove(5);
 
 		Assert::false($entries->has(5));
+
+		$entries = self::createEntries();
+
+		Assert::true($entries->has(5));
+		Assert::true($entries->has(6));
+
+		$entries = $entries->remove(5, 6);
+
+		Assert::false($entries->has(5));
+		Assert::false($entries->has(6));
+
+		$entries = self::createEntries();
+
+		Assert::true($entries->has(5));
+		Assert::true($entries->has(6));
+
+		$entries = $entries->remove(...[5, 6]);
+
+		Assert::false($entries->has(5));
+		Assert::false($entries->has(6));
+
+		$entries = self::createEntries();
+
+		Assert::exception(function () use ($entries) {
+			$entries->remove(...[1, 2, 5]);
+		}, InvalidArgumentException::class, 'Missing entries with keys: 1, 2.');
 	}
 
 
@@ -112,10 +154,32 @@ class EntriesTest extends TestCase
 		Assert::true($entries->has(5));
 		Assert::true($entries->has(6));
 
-		$entries = $entries->reduceTo([6]);
+		$entries = $entries->reduceTo(6);
 
 		Assert::false($entries->has(5));
 		Assert::true($entries->has(6));
+
+		$entries = self::createEntries();
+
+		$entries = $entries->reduceTo(6, 7);
+
+		Assert::false($entries->has(5));
+		Assert::true($entries->has(6));
+		Assert::true($entries->has(7));
+
+		$entries = self::createEntries();
+
+		$entries = $entries->reduceTo(...[6, 7]);
+
+		Assert::false($entries->has(5));
+		Assert::true($entries->has(6));
+		Assert::true($entries->has(7));
+
+		$entries = self::createEntries();
+
+		Assert::exception(function () use ($entries) {
+			$entries->reduceTo(...[1, 2, 5]);
+		}, InvalidArgumentException::class, 'Missing entries with keys: 1, 2.');
 	}
 
 
@@ -124,29 +188,18 @@ class EntriesTest extends TestCase
 		$entries = self::createEntries();
 
 		Assert::true($entries->has(5));
-		Assert::false($entries->has(7));
+		Assert::false($entries->has(8));
 
 		$entries = $entries->transform(function (array $data) {
 			unset($data[5]);
-			$data[7] = ['id' => 3];
+			$data[8] = ['id' => 3];
 
 			return $data;
-		});
+		}, Tag::class);
 
 		Assert::false($entries->has(5));
-		Assert::true($entries->has(7));
-	}
-
-
-	/**
-	 * @return Entries
-	 */
-	private static function createEntries()
-	{
-		return new Entries([
-			5 => ['id' => 1],
-			6 => ['id' => 2],
-		]);
+		Assert::true($entries->has(8));
+		Assert::type(Tag::class, $entries->get(8));
 	}
 
 }
