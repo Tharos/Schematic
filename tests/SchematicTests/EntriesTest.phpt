@@ -79,8 +79,11 @@ class EntriesTest extends TestCase
 	{
 		$entries = self::createEntries();
 
-		Assert::type('array', $entries->toArray());
-		Assert::count(3, $entries->toArray());
+		$array = $entries->toArray();
+
+		Assert::type('array', $array);
+		Assert::count(3, $array);
+		Assert::same([5, 6, 7], array_keys($array));
 	}
 
 

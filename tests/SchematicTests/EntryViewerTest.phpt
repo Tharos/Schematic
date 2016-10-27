@@ -76,9 +76,9 @@ class EntryViewerTest extends TestCase
 	public function testViewEntries()
 	{
 		$customers = new Entries([
-			['id' => 1],
-			['id' => 2],
-			['id' => 3],
+			3 => ['id' => 1],
+			4 => ['id' => 2],
+			5 => ['id' => 3],
 		], Customer::class);
 
 		$customers = EntryViewer::viewEntries($customers, function (Customer $customer) {
@@ -88,8 +88,8 @@ class EntryViewerTest extends TestCase
 		});
 
 		Assert::equal([
-			(object) ['id' => 1],
-			(object) ['id' => 3],
+			3 => (object) ['id' => 1],
+			5 => (object) ['id' => 3],
 		], $customers);
 	}
 
