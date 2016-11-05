@@ -1,54 +1,58 @@
+Následující dokumentace je také [dostupná v českém jazyce](https://github.com/Tharos/Schematic/blob/master/docs/index-cs.md).
+
 # Schematic
 
-**Obsah**
+**Table of contents**
 
-- [Úvod](#home)
-- [Jak Schematic funguje](#introduction)
+*:heart: Since I'm not native English speaker I expect that a following documentation contains a lot of grammar mistakes and formulations that a native speaker would never use. If you found Schematic interesting you can contribute to it by sending a pull request with corrections. Thank you!* 
+
+- [Introduction](#home)
+- [How Schematic works](#introduction)
 	- [`Entry`](#entry)
 	- [`Entries`](#entries)
 	- [`EntryViewer`](#entryviewer)
-- [Základy mapování](#properties)
-- [Mapování asociací](#associations)
-- [Práce s kolekcemi](#collections)
+- [Mapping basics](#properties)
+- [Associations mapping](#associations)
+- [Working with collections](#collections)
 	- [`Entries::has($key), Entries::get($key)`](#entries-getters)
 	- [ `Entries::remove(...$keys)`](#entries-remove)
 	- [ `Entries::reduceTo(...$keys)`](#entries-reduceto)
 	- [`Entries::transform(Closure $callback, $entryClass = NULL)`](#entries-transform)
-- [ View objekty podrobně](#view-objects)
+- [View objects in detail](#view-objects)
 	- [ `EntryViewer::viewEntry($entry, Closure $converter)`](#entryviewer-viewentry)
 	- [ `EntryViewer::viewEntries($entries, Closure $singleEntryConverter)`](#entryviewer-viewentries)
-- [ Pokročilé možnosti třídy `Entry`](#entry-advanced)
-	- [ Embedded záznamy](#embedded-entries)
-	- [Dědičnost, traity](#inheritance)
-	- [Parametr `$entriesClass` v `Entry::__construct`](#entriesclass)
+- [Advanced features of `Entry` class](#entry-advanced)
+	- [ Embedded entries](#embedded-entries)
+	- [Inheritance, traits](#inheritance)
+	- [Parameter `$entriesClass` in `Entry::__construct`](#entriesclass)
 
-## <a name="home"></a>Úvod
+## <a name="home"></a>Introduction
 
-Schematic je minimalistická knihovna (tři třídy o celkové délce necelých 400 řádků), která umožňuje vašemu IDE porozumět struktuře asociativních polí, se kterými vaše aplikace pracují.
+Schematic is a minimalist library (only three classes and less than 400 lines of code at all) that helps your IDE to understand a structure of associative arrays in your PHP applications.
 
-To má několik skvělých důsledků:
+It brings a lot of benefits:
 
-- Již nebudete muset fulltextově vyhledávat, kde všude v kódu čtete z pole podle nějakého klíče. Budete moci použít funkci IDE *find usages*.
-- Přejmenovávání klíčů pole se díky tomu stane hračkou! Vše vyřeší funkce IDE *rename*.
-- Již vám neuniknou žádné překlepy v názvech klíčů, protože IDE na práci s neexistujícím klíčem formou varování upozorní.
-- Z vašich *type hintů* zmizí spousta obecných `array` a nahradí je vyžadování instancí konkrétních tříd.
+- You will no longer need a fulltext search when searching for array value accesses by a given key. An IDE will find all those key usages for you.
+- Renaming array keys will be much easier! From now an IDE does whole job for you.
+- Typos in key names will no longer stay hidden from your eyes, an IDE will warn you when working with non-existing keys.
+- You will be able to replace a lot of your type hints using a general `array` by hints using concete classes.
 
-A jako bonus vám Schematic elegantně vyřeší předávání dat do šablon formou *view objektů*.
+And as a bonus Schematic brings a way how to initialize template data using *view objects*.
 
-Zkrátka Schematic váš kód zpřehlední a učiní ho méně náchylným na chyby, srozumitelnějším a snáze refaktorovatelným. To vše s minimální režií. Výkonnostní režie Schematicu je takřka neměřitelná a naučit se ho používat je záležitostí pár minut.
+In short, Schematic will make your code more readable, less prone to errors, easier to understand and refactor. All that at minimum cost. Performance overhead of Schematic is absolutely negligible and you can learn how to use it in just a few minutes.
 
-## <a name="introduction"></a>Jak Schematic funguje
+## <a name="introduction"></a>How Schematic works
 
-Schematic tvoří následující tři třídy:
+Schematic consists of following three classes:
 
 ### <a name="entry"></a>`Entry`
 
-Srdce knihovny. Abstraktní předek jednotlivých typů záznamů (chcete-li entit) přítomných ve vaší aplikaci. *Obaluje* vlastní asociativní pole a díky *@property-read* anotacím umožňuje IDE rozumět jejich struktuře. 
+The heart of the library. An abstract ancestor of all types of entries in your application. It *wraps* an associative array and via *@property-read* annotations lets an IDE to understand its structure.
 
-Takto vypadá typická práce s touto třídou:
+This is how an usual work with this class looks like:
 
 ```php
-// Inicializace ukázkového asociativního pole
+// Initialization of a sample associative array
 
 $apiResponse = [
 	'id' => 5,
@@ -63,7 +67,7 @@ $apiResponse = [
 	],
 ];
 
-// Definice tříd reprezentujících entity
+// Definition of entry class descendants (that means concrete entries)
 
 /**
  * @property-read int $id
@@ -91,21 +95,21 @@ class Article extends Entry
 
 }
 
-// Použití nadefinovaných tříd pro přístup k datům
+// Usage of defined classes for a data access
 
 $article = new Article($apiResponse);
 
 echo $article->title; // Schematic introduction
-echo $article->author->name; // $article->author instanceof Author, vypíše Vojtěch Kohout
+echo $article->author->name; // $article->author instanceof Author, outputs Vojtěch Kohout
 ```
 
-Záznamy jsou ve Schematicu read-only, knihovna si klade za cíl řešit čtení dat.
+Entries in Schematic are read-only, the purpose of the library is to help with data reading.
 
 ### <a name="entries"></a>`Entries`
 
-Kolekce záznamů s lazy strategií vytváření instancí `Entry`, implementující `Iterator` a `Countable` a obsahující pár dalších užitečných metod.
+Collection of entries implementing `Iterator` and `Countable` interfaces and providing several useful methods. It creates instances of `Entry` only when needed (that means on demand). By default it only wraps nested associative arrays holding related data.
 
-Takto vypadá typická práce s touto třídou:
+This is how an usual work with this class looks like:
 
 ```php
 $apiResponse = [
@@ -139,33 +143,33 @@ $tags = new Entries($apiResponse, Tag::class);
 echo count($tags); // 3
 
 foreach ($tags as $tag) {
-	echo $tag->name; // postupně vypíše PHP, Library a Recommended
+	echo $tag->name; // gradually outputs PHP, Library and Recommended
 }
 ```
 
- Kolekce `Entries` je immutable, volání metod vedoucích ke změně stavu vrací novou instanci.
+Collection `Entries` is immutable. Call of methods leading to a state change on it returns new instances of `Entries`.
 
 ### <a name="entryviewer"></a>`EntryViewer`
 
-Helper k výrobě *view objektů*.
+Helper for creating *view objects*.
 
-Představte si, že máme instanci třídy `Author` s properties `$id` a `$name` a ty chceme vypsat v šabloně. Typické řešení vypadá zhruba následovně:
+Imagine that we have an instance of `Author` class containing properties `$id` and `$name` and we want to output them in a template. This is how an usual solution would probably look like:
 
 ```php
-// Kdesi v controlleru
+// Somewhere in a controller
 
 $template->author = $author;
 
-// Vlastní výpis v šabloně
-This article was written by author {$author->name} with ID {$author->id}.
+// Output in a template
+This article was written by author {{ author.name }} with ID {{ author.id }}.
 ```
 
-Toto docela přirozené řešení má jedno velké úskalí. Pokud se rozhodnete property `$name` přejmenovat na `$title` a použijete k tomu funkci IDE *rename*, spolehlivě si vyrobíte chybu, protože žádné z dnešních IDE neumí v šablonách (Twig, Latte, Smarty…) vyhledat přístupy k properties.  Ve výsledku tedy budete mít všude v aplikaci property `$title`, ale v šablonách budete přistupovat k již neexistující property `$name`.
+This quite usual solution has one big disadvantage. If you decide to rename the property `$name` to `$title` using a *rename* function in your IDE, you will most probably make a bug. Even the most modern IDEs today still cannot resolve access to properties in templates (Twig, Latte, Smarty…). As a result you will most likely have a property `$title` everywhere in your application, but an access to obsolete`$name` in your templates.
 
-Schematic nabízí následující řešení:
+Schematic offers following solution:
 
 ```php
-// Kdesi v controlleru
+// Somewhere in a controller
 
 $template->author = EntryViewer::viewEntry($author, function (Author $author) {
 	return [
@@ -174,16 +178,16 @@ $template->author = EntryViewer::viewEntry($author, function (Author $author) {
 	];
 }));
 
-// Vlastní výpis v šabloně
+// Output in a template
 This article was written by author {$author->name} with ID {$author->id}.
 ```
 
-Vložením jistého meziprvku (mapy) Schematic rozváže přímou závislost kódu v šabloně na API třídy `Author`.
+By inserting of such a map Schematic lowers a coupling between a template and an API of the class `Author`.
 
-Pokud se nyní rozhodneme v IDE přejmenovat pomocí *rename* `$name` na `$title`, toto bude výsledek:
+When you decide to rename the property `$name` to `$title` using a *rename* function in your IDE now, you will get the following result:
 
 ```php
-// Kdesi v controlleru
+// Somewhere in a controller
 
 $template->author = EntryViewer::viewEntry($author, function (Author $author) {
 	return [
@@ -192,17 +196,17 @@ $template->author = EntryViewer::viewEntry($author, function (Author $author) {
 	]
 }));
 
-// Vlastní výpis v šabloně
+// Output in a template
 This article was written by author {$author->name} with ID {$author->id}.
 ```
 
-V šabloně sice zůstal zastaralý název property `$name`, nicméně to je možné snadno zrefaktorovat v dalším kroku. Důležité je, že v kódu **ani na okamžik nevznikla chyba**, totiž přístup k neexistující property.
+Note that there is still a legacy property name `$name` in the template, but it can be easily refactored in a next step. The important thing is that **there wasn't an access to undefined property at all**.
 
-## <a name="properties"></a>Základy mapování
+## <a name="properties"></a>Mapping basics
 
-Schematic umožňuje IDE rozumět struktuře pole tím, že jej obalí instancí třídy s odpovídajícími `@property-read` anotacemi. Metoda `Entry::__get` pak jen zajišťuje správné čtení dat z obaleného pole.
+The way how Schematic helps an IDE to understand a structure of an associative array is wrapping it with an instance of a class that has appropriate `@property-read` annotations. The method `Entry::__get` then only ensures a correct data reading from the wrapped array.
 
-Využití anotací je přímočaré:
+An usage of the annotations is straightforward:
 
 ```php
 /**
@@ -218,7 +222,8 @@ class Author extends Entry
 {
 }
 ```
-A pro úplnost si už jen ukažme příklad pole, které by mohla výše uvedená třída korektně obalit:
+
+For the sake of completeness, lets take a look at an array which could be wrapped with the `Author` class:
 
 ```php
 [
@@ -232,11 +237,11 @@ A pro úplnost si už jen ukažme příklad pole, které by mohla výše uveden�
 ]
 ```
 
-Schematic je minimalistická knihovna, a proto neparsuje PHPDoc anotace a nevaliduje, zda je čtený prvek pole požadovaného typu. PHPDoc anotace v něm reálně slouží *jen pro potřeby IDE*. Jediná naimplementovaná kontrola zajišťuje vyhození výjimky v případě, že **přistoupíte k property, pro kterou v obaleném poli neexistuje klíč**. Spíše jako kuriozitu pak už jen uveďme, že lze přistoupit k property, pro kterou sice chybí anotace, ale pro kterou v obaleném poli klíč existuje. Jen to bude s varováním ze strany IDE…
+Schematic is a minimalist library and that's why it doesn't parse PHPDoc annotations and doesn't validate data types when accessing array data. PHPDoc annotations take place in Schematic *only for the needs of an IDE*. The only implemented validation ensures throwing an exception when **accessing a property that misses related data in a wrapped array**. However you can access a property that has related data in a wrapped array even when it misses a PHPDoc annotation. But you will get a warning from an IDE when doing that…
 
-## <a name="associations"></a>Mapování asociací
+## <a name="associations"></a>Associations mapping
 
-Každý systém mapování asociací musí technicky pokrývat varianty `many-to-one` a `one-to-many`. Schematic k tomu používá anotace (pro IDE) a statické pole `Entry::$associations`:
+Every associations mapping system must cover variants `many-to-one` and `one-to-many`. Schematic uses annotations (for an IDE) and a static array `Entry::$associations` for that job.
 
 ```php
 $articlePayload = [
@@ -299,23 +304,23 @@ class Tag extends Entry
 $article = new Article($articlePayload);
 
 echo $article->title; // Schematic introduction
-echo $article->author->name; // $article->author instanceof Author, vypíše Vojtěch Kohout
+echo $article->author->name; // $article->author instanceof Author, outputs Vojtěch Kohout
 
 foreach ($article->tags as $tag) {
-	echo $tag->name; // $tag instanceof Tag, postupně vypíše PHP, Library a Recommended
+	echo $tag->name; // $tag instanceof Tag, gradually outputs PHP, Library and Recommended
 }
 ```
 
-Klíč v poli `$associations` definuje název asociace a její násobnost a hodnota v tomto poli definuje v případě `many-to-one` typ asociovaného záznamu a v případě `one-to-many` typ záznamů v asociované kolekci `IEntries`.
+A key in an array `$associations` defines a name of an association and its multiplicity and a value in that array defines: type of an associated entry in case of the `many-to-one` association; type of entries in an associated `IEntries` collection in case of the `one-to-many` association.
 
-## <a name="collections"></a>Práce s kolekcemi
+## <a name="collections"></a>Working with collections
 
-Instance kolekce `Entries` vznikají dvěma způsoby:
+Instances of a collection `Entries` are created by two ways:
 
-- na pozadí při přístupu k `one-to-many` asociaci,
-- anebo ručním vytvořením.
+- in background when accessing `one-to-many` association,
+- or manually using the `new` keyword.
 
-Ruční vytvoření instance je přímočaré, konstruktor přijímá jen vlastní data a informaci, jakého typu data jsou:
+Creating a new instance using `new` is quite straightforward. The constructor `Entries::__construct` accepts data and an information defining a type of the data.
 
 ```php
 $tagsPayload = [
@@ -349,30 +354,30 @@ $tags = new Entries($tagsPayload, Tag::class);
 echo count($tags); // 3
 
 foreach ($tags as $tag) {
-	echo $tag->name; // postupně vypíše PHP, Library a Recommended
+	echo $tag->name; // gradually outputs PHP, Library and Recommended
 }
 ```
 
-Všimněte si `@var` anotace, díky které IDE bude kódu správně rozumět i při iterování.
+Note the `@var` annotation helping an IDE to properly understand the values while iterating over `$tags`.
 
-Kromě implementování rozhraní `Iterator` a `Countable` poskytuje třída `Entries` i řadu dalších užitečných, dále popsaných metod.
+Besides implementing interfaces `Iterator` and `Countable` the class `Entries` contains some useful methods. Let's take a look at them.
 
 ###<a name="entries-toarray"></a> `Entries::toArray`
 
-Metoda, která vrací *pole* instancí typu určeného v `Entries::__construct`. Následující kód bude fungovat:
+A method that returns an *array* of instances of type defined in `Entries::__construct`. Following code will work:
 
 ```php
 /** @var array|Tag[] $tags */
 $tags = $tags->toArray();
 
 foreach ($tags as $tag) {
-	echo $tag->name; // $tag instanceof Tag, postupně vypíše PHP, Library a Recommended
+	echo $tag->name; // $tag instanceof Tag, gradually outputs PHP, Library and Recommended
 }
 ```
 
 ### <a name="entries-getters"></a>`Entries::has($key), Entries::get($key)`
 
-Schematic umožňuje číst záznamy z kolekce podle klíče. Viz ukázka:
+Schematic allows you to read entries by keys. Let's take a look at an example:
 
 ```php
 var_dump($tags->has(4)); // bool(true)
@@ -383,12 +388,12 @@ $tag = $tags->get(4);
 
 echo $tag->name; // Recommended
 
-$tags->get(100); // skončí výjimkou, protože klíč 100 v kolekci neexistuje
+$tags->get(100); // throws exception since the key 100 doesn't exist in the collection
 ```
 
 ### <a name="entries-remove"></a>`Entries::remove(...$keys)`
 
-Metoda vrací novou instanci kolekce `Entries`, která už neobsahuje záznamy s klíči`$keys`.
+A method that returns a new instance of collection `Entries` which doesn't contain entries with the keys `$keys` anymore.
 
 ```php
 echo count($tags); // 3
@@ -397,30 +402,30 @@ $tags = $tags->remove(4);
 
 echo count($tags); // 2
 
-$tags = $tags->remove(2, 3); // anebo $tags->remove(...[2, 3])
+$tags = $tags->remove(2, 3); // or $tags->remove(...[2, 3])
 
 echo count($tags); // 0
 
-$tags->remove(100); // skončí výjimkou, protože klíč 100 v kolekci neexistuje
+$tags->remove(100); // throws exception since the key 100 doesn't exist in the collection
 ```
 
 ### <a name="entries-reduceto"></a>`Entries::reduceTo(...$keys)`
 
-Metoda vrací novou instanci kolekce `Entries`, která je redukovaná pouze na záznamy s klíči `$keys`.
+A method that returns a new instance of collection `Entries` which is reduced to entries with keys `$keys` only.
 
 ```php
 echo count($tags); // 3
 
-$tags = $tags->reduceTo(...[2, 3]); // anebo $tags->reduceTo(2, 3)
+$tags = $tags->reduceTo(...[2, 3]); // or $tags->reduceTo(2, 3)
 
 echo count($tags); // 2
 
-$tags->reduceTo(2, 20, 21); // skončí výjimkou, protože klíče 20 a 21 v kolekci neexistují
+$tags->reduceTo(2, 20, 21); // throws exception since keys 20 and 21 don't exist in the collection
 ```
 
 ### <a name="entries-transform"></a>`Entries::transform(Closure $callback, $entryClass = NULL)`
 
-Metoda vrací novou instanci kolekce `Entries`, které předá „své“ pole `$data` modifikované pomocí funkce `$callback`.
+A method that returns a new instance of collection `Entries` to which it provides its array `$data` modified using `$callback`.
 
 ```php
 class SerializableTag extends Tag implements JsonSerializable
@@ -455,20 +460,20 @@ foreach ($tags as $tag) {
 }
 
 /*
-Vypíše:
+Outputs:
 {"id":10,"name":"PHP"}
 {"id":11,"name":"LIBRARY"}
 {"id":12,"name":"RECOMMENDED"}
 */
 ```
 
-## <a name="view-objects"></a>View objekty podrobně
+## <a name="view-objects"></a>View objects in detail
 
-V kapitole [Jak Schematic funguje](#introduction) jsme si již ve stručnosti [představili](#entryviewer) třídu `EntryViewer` a vysvětlili si, k čemu jsou view objekty vůbec dobré. Nyní se zaměříme na API třídy `EntryViewer` podrobněji.
+In the chapter [How Schematic works](#introduction) we've already introduced the class `EntryViewer` and a motivation for using the view objects. Let's take a deep view on an API of the class `EntryViewer`.
 
 ### <a name="entryviewer-viewentry"></a>`EntryViewer::viewEntry($entry, Closure $converter)`
 
-Metoda vrací instanci (standardně třídy `stdClass`) získanou předáním parametru `$entry` konverzní funkci `$converter`.
+A method that returns an instance (usually of `stdClass`) obtained by passing an `$entry` parameter to a conversion function `$converter`.
 
 ```php
 $author = EntryViewer::viewEntry($author, function (Author $author) {
@@ -481,7 +486,7 @@ $author = EntryViewer::viewEntry($author, function (Author $author) {
 print_r($author);
 
 /*
-Vypíše:
+Outputs:
 stdClass Object
 (
     [id] => 1
@@ -490,7 +495,7 @@ stdClass Object
 */
 ```
 
-Samozřejmě sama konverzní funkce může ve svém těle pracovat s helperem `EntryViewer`, což je velmi užitečné při práci s asociacemi:
+Of course the convertion function itself can use the helper `EntryViewer` in its body. It is very useful when working with associations:
 
 ```php
 $articleView = EntryViewer::viewEntry($article, function (Article $article) {
@@ -509,7 +514,7 @@ $articleView = EntryViewer::viewEntry($article, function (Article $article) {
 print_r($articleView);
 
 /*
-Vypíše:
+Outputs:
 stdClass Object
 (
     [id] => 5
@@ -524,7 +529,7 @@ stdClass Object
 */
 ```
 
-Pro tip: pokud v aplikaci budete běžně předávat stejné záznamy do různých šablon, doporučuji vyčlenit si vlastní konverze do samostatných služeb. Váš kód to velmi zestruční:
+Pro tip: if you plan to pass equal entries to various templates, it is recommended to encapsulate the convertion map in a standalone service. It will abridge your code a lot:
 
 ```php
 $articleView = EntryViewer::viewEntry($article, function (Article $article) {
@@ -534,9 +539,9 @@ $articleView = EntryViewer::viewEntry($article, function (Article $article) {
 
 ###<a name="entryviewer-viewentries"></a> `EntryViewer::viewEntries($entries, Closure $singleEntryConverter)`
 
-Metoda vrací *pole* instancí (standardně třídy `stdClass`) získaných předáním každého záznamu z kolekce `$entries` (pole nebo instance `Traversable`) konverzní funkci `$singleEntryConverter`. Záznam, pro který konverzní funkce vrátí `NULL`, nebude ve výsledném poli obsažen.
+A methot that returns an *array* of instances (usually of `stdClass`) obtained by passing every single entry from `$entries` collection (array or an instance of `Traversable`) to a conversion function `$singleEntryConverter`. An entry that translates to `NULL` in conversion function will be omitted in a result array.
 
-Vše nejlépe osvětlí ukázka:
+It sounds complicated but an example will clarify it:
 
 ```php
 $tagsView = EntryViewer::viewEntries($tags, function (Tag $tag) {
@@ -549,7 +554,7 @@ $tagsView = EntryViewer::viewEntries($tags, function (Tag $tag) {
 print_r($tagsView);
 
 /*
-Vypíše:
+Outputs:
 Array
 (
     [0] => stdClass Object
@@ -574,7 +579,7 @@ Array
 */
 ```
 
-Ukažme si také v praxi možnost vynechat některý ze záznamů:
+Let's take a look at the possibility to omit some entry:
 
 ```php
 $tagsView = EntryViewer::viewEntries($tags, function (Tag $tag) {
@@ -587,7 +592,7 @@ $tagsView = EntryViewer::viewEntries($tags, function (Tag $tag) {
 print_r($tagsView);
 
 /*
-Vypíše:
+Outputs:
 Array
 (
     [0] => stdClass Object
@@ -606,7 +611,7 @@ Array
 */
 ```
 
-A na závěr si už jen ukažme kombinované využití spolu s `viewEntry`:
+And finally let's take a look at a complex usage of described features:
 
 ```php
 $articleView = EntryViewer::viewEntry($article, function (Article $article) {
@@ -631,7 +636,7 @@ $articleView = EntryViewer::viewEntry($article, function (Article $article) {
 print_r($articleView);
 
 /*
-Vypíše:
+Outputs:
 stdClass Object
 (
     [id] => 5
@@ -662,19 +667,19 @@ stdClass Object
 */
 ```
 
-Připomeňme si ještě, že tuhle celou zábavu s view objekty děláme proto, abychom uvolnili *přímé provázání šablon a API záznamů*, čímž učiníme kód lépe automaticky refaktorovatelný.
+Remember that we do all this fun with the view objects in order to break the dependency between templates and APIs of entries. That will make a refactoring easier.
 
-Při důsledném používání toho patternu lze dosáhnout úplné jistoty, že automatický refaktoring aplikaci „nerozbije“.
+If we use this pattern strictly, we can be sure that automatic refactoring won't break our application.
 
-## <a name="entry-advanced"></a>Pokročilé možnosti třídy `Entry`
+## <a name="entry-advanced"></a>Advanced features of `Entry` class
 
-Třída `Entry` toho umí ještě víc, než jsme si [ukázali](#entry) v kapitole věnované základům Schematicu.
+The class `Entry` offers much more than we've [seen](#entry) in the chapter focused on Schematic basics.
 
-### <a name="embedded-entries"></a>Embedded záznamy
+### <a name="embedded-entries"></a>Embedded entries
 
-Pokud se rozhodnete Schematic používat pro mapování výsledků SQL dotazů, narazíte na komplikaci: výsledky SQL dotazů jsou relace (lidově řečeno *dvourozměrné tabulky*) a DBAL knihovny je bez vaší pomoci na zanořenou hierarchii asociativních polí nepřevedou.
+When you decide to use Schematic for mapping results of SQL queries, you will encounter a problem: results of SQL queries are relations (we mean "two-dimensional tables") and DBAL libraries won't transform them into nested associative arrays without our help.
 
-Vezmeme-li v úvahu následující dotaz:
+If we have following SQL query:
 
 ```sql
 SELECT
@@ -685,7 +690,7 @@ JOIN author ON article.author_id = author.id
 WHERE article.id = 5
 ```
 
-výborný pro mapování by pro nás byl výsledek v takovémto formátu:
+a result in following format would be perfect for mapping:
 
 ```php
 [
@@ -697,7 +702,8 @@ výborný pro mapování by pro nás byl výsledek v takovémto formátu:
 	]
 ]
 ```
-ale my dostaneme takovéto pole:
+
+but instead of that we'll end up with a following array:
 
 ```php
 [
@@ -707,11 +713,11 @@ ale my dostaneme takovéto pole:
 ]
 ```
 
-Plochou relaci, ve které se navíc kvůli kolizi sloupců s názvem `id` ztratilo ID článku.
+Flat relation, even lacking article IDs due to a conflict of multiple columns named `id`.
 
-Prekérní situace, nicméně Schematic ji umí elegantně vyřešit pomocí tzv. vložených (embedded) záznamů.
+Poor situation. However Schematic can gracefully resolve it using so called embedded entries.
 
-Pokud výše uvedený SQL dotaz přepíšeme do následující podoby:
+If we rewrite mentioned SQL query to a following version:
 
 ```sql
 SELECT
@@ -722,7 +728,7 @@ JOIN author ON article.author_id = author.id
 WHERE article.id = 5
 ```
 
-dostaneme výsledek:
+we'll end up with a result:
 
 ```php
 [
@@ -733,9 +739,9 @@ dostaneme výsledek:
 ]
 ```
 
-což je výrazně lepší: již se nám neztratilo žádné ID a také lze díky prefixu `a_` spolehlivě odlišit sloupce z tabulky `author` od sloupců z tabulky `article`.
+which is much better: we didn't lose article IDs and thanks to the prefix `a_` we can reliably tell columns that belongs to the table `author` from columns that belongs to the table `article`.
 
-A takovýto výsledek již Schematic umí namapovat. Stačí nadefinovat třídu `Article` takto:
+And this is a result that can already be mapped by Schematic. All we have to do i to define the class `Article` this way:
 
 ```php
 /**
@@ -753,16 +759,17 @@ class Article extends Entry
 }
 ```
 
-Tečka v definici asociace v poli `$associations` vyjadřuje, že asociovaný záznam je do hlavního záznamu vložený. To znamená, že se v obaleném poli nachází na stejné úrovni, jako hlavní záznam.
+A period in the association definition in the array `$associations` tells that an associated entry is embedded in a main entry. It means that main and associated entries are at the same level in a wrapped array.
 
-Přístup k properties pak už funguje přesně podle očekávání:
+Now, let's have a look that properties can be accessed as expected:
 
 ```php
 echo $article->title; // Schematic introduction
 echo $article->author->name; // Vojtěch Kohout
 ```
 
-Schematic nám umožňuje být ještě o něco stručnější, asociaci `author` můžeme totiž nadefinovat také takto:
+Schematic lets us be even briefer since we can define an `author` association also this way:
+
 
 ```php
 protected static $associations = [
@@ -770,9 +777,9 @@ protected static $associations = [
 ];
 ```
 
-V takovém případě se v obaleném poli hledá takzvaný výchozí prefix, který se sestává z názvu property doplněného o podtržítko; v ukázce tedy prefix `author_`.
+In this case so called default prefix is searched in the wrapped array and it consists of the name of the association followed by an underscore; thus `author_` in our example.
 
-SQL dotaz, který by přímo vedl k požadovanému poli, by tedy vypadal následovně:
+An SQL query directly leading to such an array would look like this:
 
 ```sql
 SELECT
@@ -783,13 +790,13 @@ JOIN author ON article.author_id = author.id
 WHERE article.id = 5
 ```
 
-Tímto způsobem lze elegantně namapovat výsledky dotazů, které vybírají záznamy z tabulky, k níž JOINují její many-to-one a one-to-one asociace. Tomu přesně odpovídá ukázka výše: vztah článku a autora je many-to-one.
+This way you can gracefully map results of queries that select rows from a table and join its many-to-one and one-to-one associations. That's exactly the example above: a type of an association between the article and the author is many-to-one.
 
-S výsledky dotazů, které vybírají záznamy z tabulky, k níž JOINují její one-to-many a many-to-many asociace, je ale zapotřebí pracovat trochu obezřetně: je zapotřebí si uvědomit povahu duplicit v takovém výsledku.
+However it is necessary to handle results of queries that select rows from a table and join its one-to-many and many-to-many associations a little bit more prudently. It is necessary to understand well nature of data duplicities in such results.
 
-### <a name="inheritance"></a>Dědičnost, traity
+### <a name="inheritance"></a>Inheritance, traits
 
-Následující vlastnost není vlastností Schematicu, nýbrž moderních IDE. Anotace `@property-read` se dědí a je možné je znovupoužívat i pomocí trait:
+Following features are not features of Schematic, they are features of modern IDEs. The annotation `@property-read` can be inherited and also reused using traits:
 
 ```php
 /**
@@ -822,13 +829,15 @@ class Tag extends Entry
 
 
 // Ve všech níže uvedených případech IDE rozpozná na instancích properties, ke kterým se přistupuje
+
+// In a following example an IDE recognizes all accessed properties
 echo $author->id;
 echo $author->name;
 echo $tag->name;
 ```
 
-### <a name="entriesclass"></a>Parametr `$entriesClass` v `Entry::__construct`
+### <a name="entriesclass"></a>Parameter `$entriesClass` in `Entry::__construct`
 
-Pochopitelně vám nic nebrání seskupovat Schematicové záznamy v jiné kolekci, než v instanci vestavěné `Entries`. Nicméně řekli jsme si, že kolekce záznamů nevznikají pouze přímým vytvářením jejích instancí, nýbrž také na pozadí při přístupu k one-to-many asociacím.
+Of course you can group Schematic entries in a different collection than the built-in `Entries`. However, as we stated before, collections of entries are not only created using `new` keyword, but also in background when accessing `one-to-many` association.
 
-A právě parametr `$entriesClass` v `Entry::__construct` vám umožňuje ovlivnit, jaká třída reprezentující kolekci se bude při přístupu k one-to-many asociaci instanciovat. Jedinou podmínkou je, že daná třída musí implementovat rozhraní `IEntries`.
+And it is a parameter `$entriesClass` in the `Entry::__construct` that allows you to define what class representing an collection will by instantiated when accessing one-to-many association.
