@@ -31,11 +31,11 @@ class EntryViewer
 	{
 		$result = [];
 
-		foreach ($entries as $entry) {
+		foreach ($entries as $index => $entry) {
 			$entry = self::viewEntry($entry, $singleEntryConverter);
 
 			if ($entry !== NULL) {
-				$result[] = $entry;
+				$result[$index] = $entry;
 			}
 		}
 
