@@ -51,9 +51,7 @@ class Entry
 		$this->data = $data;
 		$this->entriesClass = $entriesClass;
 
-		if (!array_key_exists($calledClass = get_called_class(), self::$parsedAssociations)) {
-			self::parseAssociations($calledClass);
-		}
+		$this->initParsedAssociations();
 	}
 
 
@@ -116,6 +114,12 @@ class Entry
 	}
 
 
+	public function __wakeup()
+	{
+		$this->initParsedAssociations();
+	}
+
+
 	/**
 	 * @param string $prefix
 	 * @return array|NULL
@@ -150,6 +154,14 @@ class Entry
 		}
 
 		return $this->data[$field];
+	}
+
+
+	private function initParsedAssociations()
+	{
+		if (!array_key_exists($calledClass = get_called_class(), self::$parsedAssociations)) {
+			self::parseAssociations($calledClass);
+		}
 	}
 
 }
