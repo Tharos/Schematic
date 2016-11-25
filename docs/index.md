@@ -4,7 +4,7 @@ Následující dokumentace je také [dostupná v českém jazyce](https://github
 
 **Table of contents**
 
-*:heart: Since I'm not native English speaker I expect that a following documentation contains a lot of grammar mistakes and formulations that a native speaker would never use. If you found Schematic interesting you can contribute to it by sending a pull request with corrections. Thank you!* 
+*:heart: Since I'm not a native English speaker, I expect that the following documentation contains a lot of grammar mistakes and formulations that a native speaker would never use. If you find Schematic interesting, you can contribute to it by sending a pull request with corrections. Thank you!*
 
 - [Introduction](#home)
 - [How Schematic works](#introduction)
@@ -28,18 +28,18 @@ Následující dokumentace je také [dostupná v českém jazyce](https://github
 
 ## <a name="home"></a>Introduction
 
-Schematic is a minimalist library (only three classes and less than 400 lines of code at all) that helps your IDE to understand a structure of associative arrays in your PHP applications.
+Schematic is a minimalist library (only three classes and less than 400 lines of code in total) that helps your IDE to understand the structure of associative arrays in your PHP applications.
 
 It brings a lot of benefits:
 
-- You will no longer need a fulltext search when searching for array value accesses by a given key. An IDE will find all those key usages for you.
-- Renaming array keys will be much easier! From now an IDE does whole job for you.
-- Typos in key names will no longer stay hidden from your eyes, an IDE will warn you when working with non-existing keys.
+- You will no longer need a fulltext search when searching for array value accesses by a given key. Your IDE will find all those key usages for you.
+- Renaming array keys will be much easier! From now on, your IDE does that job for you.
+- Typos in key names will no longer stay hidden from your eyes. Your IDE will warn you when working with non-existing keys.
 - You will be able to replace a lot of your type hints using a general `array` by hints using concete classes.
 
-And as a bonus Schematic brings a way how to initialize template data using *view objects*.
+And as a bonus, Schematic comes up with a way to initialize template data using *view objects*.
 
-In short, Schematic will make your code more readable, less prone to errors, easier to understand and refactor. All that at minimum cost. Performance overhead of Schematic is absolutely negligible and you can learn how to use it in just a few minutes.
+In short, Schematic will make your code more readable, less error-prone, and easier to understand and refactor. All that at minimum cost. Performance overhead of Schematic is absolutely negligible and you can learn how to use it in just a few minutes.
 
 ## <a name="introduction"></a>How Schematic works
 
@@ -47,9 +47,9 @@ Schematic consists of following three classes:
 
 ### <a name="entry"></a>`Entry`
 
-The heart of the library. An abstract ancestor of all types of entries in your application. It *wraps* an associative array and via *@property-read* annotations lets an IDE to understand its structure.
+The heart of the library. An abstract ancestor of all types of entries in your application. It *wraps* an associative array and, using *@property-read* annotations, lets your IDE understand its structure.
 
-This is how an usual work with this class looks like:
+This is how a usual work with this class looks like:
 
 ```php
 // Initialization of a sample associative array
@@ -95,7 +95,7 @@ class Article extends Entry
 
 }
 
-// Usage of defined classes for a data access
+// Usage of defined classes for data access
 
 $article = new Article($apiResponse);
 
@@ -103,13 +103,13 @@ echo $article->title; // Schematic introduction
 echo $article->author->name; // $article->author instanceof Author, outputs Vojtěch Kohout
 ```
 
-Entries in Schematic are read-only, the purpose of the library is to help with data reading.
+Entries in Schematic are read-only. The purpose of the library is to help with data reading.
 
 ### <a name="entries"></a>`Entries`
 
-Collection of entries implementing `Iterator` and `Countable` interfaces and providing several useful methods. It creates instances of `Entry` only when needed (that means on demand). By default it only wraps nested associative arrays holding related data.
+A collection of entries implementing `Iterator` and `Countable` interfaces and providing several useful methods. It creates instances of `Entry` only when needed (that means on demand). By default, it only wraps nested associative arrays holding related data.
 
-This is how an usual work with this class looks like:
+This is how a usual work with this class looks like:
 
 ```php
 $apiResponse = [
@@ -147,13 +147,13 @@ foreach ($tags as $tag) {
 }
 ```
 
-Collection `Entries` is immutable. Call of methods leading to a state change on it returns new instances of `Entries`.
+Collection `Entries` is immutable. Its methods return new instances of `Entries` rather than changing the state.
 
 ### <a name="entryviewer"></a>`EntryViewer`
 
 Helper for creating *view objects*.
 
-Imagine that we have an instance of `Author` class containing properties `$id` and `$name` and we want to output them in a template. This is how an usual solution would probably look like:
+Imagine we have an instance of `Author` class containing properties `$id` and `$name`, and we want to output them in a template. This is how a usual solution would probably look like:
 
 ```php
 // Somewhere in a controller
@@ -164,12 +164,12 @@ $template->author = $author;
 This article was written by author {{ author.name }} with ID {{ author.id }}.
 ```
 
-This quite usual solution has one big disadvantage. If you decide to rename the property `$name` to `$title` using a *rename* function in your IDE, you will most probably make a bug. Even the most modern IDEs today still cannot resolve access to properties in templates (Twig, Latte, Smarty…). As a result you will most likely have a property `$title` everywhere in your application, but an access to obsolete`$name` in your templates.
+This - quite usual - solution has one big disadvantage. If you decide to rename the property `$name` to `$title` using a *rename* function in your IDE, you will most probably make a bug. Even the most modern IDEs today still cannot resolve access to properties in templates (Twig, Latte, Smarty…). As a result, you will be still refering to the old property name (`$name`) in your templates despite having your IDE done the renaming for you.
 
 Schematic offers following solution:
 
 ```php
-// Somewhere in a controller
+// Somewhere in your controller
 
 $template->author = EntryViewer::viewEntry($author, function (Author $author) {
 	return [
@@ -182,9 +182,9 @@ $template->author = EntryViewer::viewEntry($author, function (Author $author) {
 This article was written by author {$author->name} with ID {$author->id}.
 ```
 
-By inserting of such a map Schematic lowers a coupling between a template and an API of the class `Author`.
+Using this middle layer, Schematic lowers the coupling between the template and the API of the class `Author`.
 
-When you decide to rename the property `$name` to `$title` using a *rename* function in your IDE now, you will get the following result:
+If you decide to rename the property `$name` to `$title` using a *rename* function in your IDE now, you will get the following result:
 
 ```php
 // Somewhere in a controller
@@ -200,13 +200,13 @@ $template->author = EntryViewer::viewEntry($author, function (Author $author) {
 This article was written by author {$author->name} with ID {$author->id}.
 ```
 
-Note that there is still a legacy property name `$name` in the template, but it can be easily refactored in a next step. The important thing is that **there wasn't an access to undefined property at all**.
+Note that there is still a legacy property name `$name` in the template, but it can be easily refactored in another step. The important thing is that **there wasn't an access to undefined property at all**.
 
 ## <a name="properties"></a>Mapping basics
 
-The way how Schematic helps an IDE to understand a structure of an associative array is wrapping it with an instance of a class that has appropriate `@property-read` annotations. The method `Entry::__get` then only ensures a correct data reading from the wrapped array.
+Schematic helps your IDE understand the structure of an associative array by wrapping it with an instance of a class that has appropriate `@property-read` annotations. Method `Entry::__get` then only secures correct data reading from the wrapped array.
 
-An usage of the annotations is straightforward:
+The usage of annotations is straightforward:
 
 ```php
 /**
@@ -237,11 +237,11 @@ For the sake of completeness, lets take a look at an array which could be wrappe
 ]
 ```
 
-Schematic is a minimalist library and that's why it doesn't parse PHPDoc annotations and doesn't validate data types when accessing array data. PHPDoc annotations take place in Schematic *only for the needs of an IDE*. The only implemented validation ensures throwing an exception when **accessing a property that misses related data in a wrapped array**. However you can access a property that has related data in a wrapped array even when it misses a PHPDoc annotation. But you will get a warning from an IDE when doing that…
+Schematic is a minimalist library and that's why it doesn't parse PHPDoc annotations and doesn't validate data types when accessing array data. PHPDoc annotations take place in Schematic *only for your IDE's needs*. Only validation is implemented to throw an exception when **accessing a property that misses related data in the wrapped array**. However, you can still access a property that has related data in the wrapped array even when it misses a PHPDoc annotation, but you get a warning from your IDE…
 
 ## <a name="associations"></a>Associations mapping
 
-Every associations mapping system must cover variants `many-to-one` and `one-to-many`. Schematic uses annotations (for an IDE) and a static array `Entry::$associations` for that job.
+Every association mapping system must cover variants `many-to-one` and `one-to-many`. Schematic uses annotations (for your IDE) and static array `Entry::$associations` for that job.
 
 ```php
 $articlePayload = [
