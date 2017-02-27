@@ -11,6 +11,7 @@ class Entry
 	const INDEX_ENTRYCLASS = 0;
 	const INDEX_MULTIPLICITY = 1;
 	const INDEX_EMBEDDING = 2;
+	const INDEX_NULLABLE = 3;
 
 	/**
 	 * @var array
@@ -64,18 +65,19 @@ class Entry
 
 		foreach (static::$associations as $association => $entryClass) {
 			$matches = [];
-			$result = preg_match('#^([^.[\]]+)(\.[^.[\]]*)?(\[\])?$#', $association, $matches);
+			$result = preg_match('#^(\?)?([^.[\]]+)(\.[^.[\]]*)?(\[\])?$#', $association, $matches);
 
-			if ($result === 0 || (!empty($matches[2]) && !empty($matches[3]))) {
+			if ($result === 0 || (!empty($matches[3]) && !empty($matches[4]))) {
 				throw new InvalidArgumentException('Invalid association definition given: ' . $association);
 			}
 
-			self::$parsedAssociations[$class][$matches[1]] = [
+			self::$parsedAssociations[$class][$matches[2]] = [
 				self::INDEX_ENTRYCLASS => $entryClass,
-				self::INDEX_MULTIPLICITY => !empty($matches[3]),
-				self::INDEX_EMBEDDING => !empty($matches[2]) ?
-					($matches[2] === '.' ? $matches[1] . '_' : substr($matches[2], 1)) :
+				self::INDEX_MULTIPLICITY => !empty($matches[4]),
+				self::INDEX_EMBEDDING => !empty($matches[3]) ?
+					($matches[3] === '.' ? $matches[2] . '_' : substr($matches[3], 1)) :
 					FALSE,
+				self::INDEX_NULLABLE => !empty($matches[1]),
 			];
 		}
 	}
@@ -101,7 +103,10 @@ class Entry
 			$this->readEmbeddedEntry($association[self::INDEX_EMBEDDING]) :
 			$this->readData($name);
 
-		if ($data === NULL) {
+		if (!$association[self::INDEX_MULTIPLICITY] && (
+			$data === NULL
+			|| ($association[self::INDEX_NULLABLE] && empty($data))
+		)) {
 			return $this->data[$name] = NULL;
 		}
 
@@ -109,7 +114,7 @@ class Entry
 		$entriesClass = $this->entriesClass;
 
 		return $this->data[$name] = $association[self::INDEX_MULTIPLICITY] ?
-			new $entriesClass($data, $entryClass) :
+			new $entriesClass((array) $data, $entryClass) :
 			new $entryClass($data, $this->entriesClass);
 	}
 

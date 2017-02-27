@@ -55,8 +55,35 @@ class EntryTest extends TestCase
 		Assert::same(100, $order->customer->id);
 	}
 
+	/**
+	 * @dataProvider provideDataNullableRelation
+	 */
+	public function testEntriesAccessToNullableParameter($customer)
+	{
+		$order = new Order([
+			'customer' => $customer,
+			'orderItems' => [],
+		]);
+		Assert::null($order->customer);
+	}
 
-	public function testEntriesClass()
+
+	public function provideDataNullableRelation()
+	{
+		return [
+			[[]],
+			[false],
+			[null],
+			[0],
+			[0.0],
+			[''],
+		];
+	}
+
+	/**
+	 * @dataProvider provideDataNullableCollection
+	 */
+	public function testEntriesClass($lastCollectionValue)
 	{
 		$order = new Order([
 			'orderItems' => [
@@ -71,6 +98,10 @@ class EntryTest extends TestCase
 					'id' => 2,
 					'tags' => [],
 				],
+				[
+					'id' => 3,
+					'tags' => $lastCollectionValue,
+				],
 			],
 		], CustomEntries::class);
 
@@ -79,18 +110,37 @@ class EntryTest extends TestCase
 		$orderItems = $order->orderItems->toArray();
 		/** @var OrderItem $firstOrderItem */
 		$firstOrderItem = reset($orderItems);
+		/** @var OrderItem $lastOrderItem */
+		$lastOrderItem = end($orderItems);
 
 		Assert::type(CustomEntries::class, $firstOrderItem->tags);
+		Assert::type(CustomEntries::class, $lastOrderItem->tags);
 	}
 
 
-	public function testEmbeddedEntries()
+	public function provideDataNullableCollection()
+	{
+		return [
+			[[]],
+			[false],
+			[null],
+			[0],
+			[0.0],
+			[''],
+		];
+	}
+
+	/**
+	 * @dataProvider provideDataNullableCustomer
+	 */
+	public function testEmbeddedEntries($customerId, $customerName)
 	{
 		$book = new Book([
 			'id' => 12,
 			'title' => 'PHP: The Bad Parts',
 			'tag_name' => 'bestseller',
-			'customer_id' => 20,
+			'customer_id' => $customerId,
+			'customer_name' => $customerName,
 			'a_firstname' => 'John',
 			'a_surname' => 'Doe',
 		]);
@@ -99,7 +149,41 @@ class EntryTest extends TestCase
 		Assert::same('bestseller', $book->tag->name);
 
 		Assert::type(Customer::class, $book->customer);
-		Assert::same(20, $book->customer->id);
+		Assert::same($customerId, $book->customer->id);
+		Assert::same($customerName, $book->customer->name);
+
+		Assert::type(Author::class, $book->author);
+		Assert::same('John', $book->author->firstname);
+		Assert::same('Doe', $book->author->surname);
+	}
+
+
+	public function provideDataNullableCustomer()
+	{
+		return [
+			[20, 'Jack'],
+			[null, 'Jack'],
+			[20, null],
+		];
+	}
+
+
+	public function testNullableEmbeddedEntries()
+	{
+		$book = new Book([
+			'id' => 12,
+			'title' => 'PHP: The Bad Parts',
+			'tag_name' => 'bestseller',
+			'customer_id' => null,
+			'customer_name' => null,
+			'a_firstname' => 'John',
+			'a_surname' => 'Doe',
+		]);
+
+		Assert::type(Tag::class, $book->tag);
+		Assert::same('bestseller', $book->tag->name);
+
+		Assert::null($book->customer);
 
 		Assert::type(Author::class, $book->author);
 		Assert::same('John', $book->author->firstname);
