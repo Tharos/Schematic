@@ -353,14 +353,28 @@ $tags = new Entries($tagsPayload, Tag::class);
 
 echo count($tags); // 3
 
-foreach ($tags as $tag) {
-	echo $tag->name; // gradually outputs PHP, Library and Recommended
+foreach ($tags as $tagIndex => $tag) {
+	echo $tagIndex . ': ' . $tag->name; // gradually outputs 2: PHP, 3: Library and 4: Recommended
 }
 ```
 
 Note the `@var` annotation helping an IDE to properly understand the values while iterating over `$tags`.
 
 Besides implementing interfaces `Iterator` and `Countable` the class `Entries` contains some useful methods. Let's take a look at them.
+
+Original indexes are also available using `foreach` that is even if defined by `one-to-many` association: 
+
+```php
+/**
+ * @property-read Tag[] $tags
+ */
+class Article extends Entry
+{
+	protected static $associations = [
+		'tags[]' => Tag::class,
+	];
+}
+```
 
 ###<a name="entries-toarray"></a> `Entries::toArray`
 

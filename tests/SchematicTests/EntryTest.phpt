@@ -144,6 +144,46 @@ class EntryTest extends TestCase
 		Assert::true(empty($author->id));
 	}
 
+
+	/**
+	 * It should make key available when iterating using foreach.
+	 */
+	public function testGetIndexInForeach()
+	{
+		$peter = 'Peter';
+		$joe = 'Joe';
+		$glenn = 'Glenn';
+		$ids = [
+			$peter => 3,
+			$joe => 'foo',
+			$glenn => 9,
+		];
+		$data = [
+			'indexedInformation' => [
+				$ids[$peter] => [
+					'firstname' => $peter,
+					'lastname' => 'Griffin',
+				],
+				$ids[$joe] => [
+					'firstname' => $joe,
+					'lastname' => 'Swanson',
+				],
+				$ids[$glenn] => [
+					'firstname' => $glenn,
+					'lastname' => 'Quagmire',
+				],
+			],
+		];
+
+		$registry = new Registry($data);
+
+		foreach ($registry->indexedInformation as $key => $person) {
+			Assert::same($ids[$person->firstname], $key);
+		}
+
+		Assert::count(count($ids), $registry->indexedInformation);
+	}
+
 }
 
 

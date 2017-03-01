@@ -93,3 +93,23 @@ class Book extends Identified
 	];
 
 }
+
+
+/**
+ * @property-read Person[] indexedInformation
+ */
+class Registry extends Entry
+{
+	protected static $associations = [
+		'indexedInformation[]' => Person::class,
+	];
+}
+
+
+/**
+ * @property-read string firstname
+ * @property-read string lastname
+ */
+class Person extends Entry
+{
+}
