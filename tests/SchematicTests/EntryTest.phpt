@@ -122,6 +122,28 @@ class EntryTest extends TestCase
 		Assert::same('Doe', $book->author->surname);
 	}
 
+
+	/**
+	 * It should allow using isset() and empty() functions to check state of the properties.
+	 * No need to assign them to variables before checking their value anymore.
+	 */
+	public function testIsset()
+	{
+		$author = new Author([
+			'firstname' => 'John',
+			'surname' => null,
+		]);
+
+		Assert::true(isset($author->firstname));
+		Assert::false(empty($author->firstname));
+
+		Assert::false(isset($author->surname));
+		Assert::true(empty($author->surname));
+
+		Assert::false(isset($author->id));
+		Assert::true(empty($author->id));
+	}
+
 }
 
 
