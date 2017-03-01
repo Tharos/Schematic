@@ -121,6 +121,16 @@ class Entry
 
 
 	/**
+	 * @param string $name
+	 * @return bool
+	 */
+	public function __isset($name)
+	{
+		return isset($this->data[$name]);
+	}
+
+
+	/**
 	 * @param string $prefix
 	 * @return array|NULL
 	 */
