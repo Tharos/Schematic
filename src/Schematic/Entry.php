@@ -19,7 +19,7 @@ class Entry
 	protected static $associations = [];
 
 	/**
-	 * @var array entryClass => [INDEX_ENTRYCLASS => relatedEntryClass, INDEX_MULTIPLICITY => multiplicity, INDEX_EMBEDDING => embedding]
+	 * @var array entryClass => [INDEX_ENTRYCLASS => relatedEntryClass, INDEX_MULTIPLICITY => multiplicity, INDEX_EMBEDDING => embedding, INDEX_NULLABLE => null value allowed]
 	 */
 	private static $parsedAssociations = [];
 
