@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Schematic\Entries;
 use Tester\Assert;
 use Tester\TestCase;
+use TypeError;
 
 
 /**
@@ -15,6 +16,282 @@ use Tester\TestCase;
  */
 class EntryTest extends TestCase
 {
+
+	/**
+	 * @dataProvider provideNotEmptyScalarValues
+	 * @dataProvider provideEmptyScalarValues
+	 * @dataProvider provideNullValue
+	 * @dataProvider provideNotEmptyArray
+	 * @dataProvider provideEmptyArray
+	 * @dataProvider provideMinimalEntityData
+	 */
+	public function testGeneralProperty($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => $value,
+			'valueRequired' => [],
+			'valuesRequired' => [],
+		]);
+
+		Assert::same($value, $entity->value);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyArray
+	 * @dataProvider provideEmptyArray
+	 * @dataProvider provideMinimalEntityData
+	 */
+	public function testRequiredPropertyFromArray($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => $value,
+			'valuesRequired' => [],
+		]);
+
+		Assert::type(UniversalProperties::class, $entity->valueRequired);
+	}
+
+
+	/**
+	 * @dataProvider provideNullValue
+	 */
+	public function testRequiredPropertyFromNull($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => $value,
+			'valuesRequired' => [],
+		]);
+
+		Assert::null($entity->valueRequired);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyScalarValues
+	 * @dataProvider provideEmptyScalarValues
+	 */
+	public function testRequiredPropertyFromScalar($value)
+	{
+		Assert::exception(function () use ($value) {
+			$entity = new UniversalProperties([
+				'value' => null,
+				'valueRequired' => $value,
+				'valuesRequired' => [],
+			]);
+			$entity->valueRequired;
+		}, TypeError::class);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyArray
+	 * @dataProvider provideMinimalEntityData
+	 */
+	public function testNullablePropertyFromNotEmptyArray($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => [],
+			'valueNullable' => $value,
+			'valuesRequired' => [],
+		]);
+
+		Assert::type(UniversalProperties::class, $entity->valueNullable);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyScalarValues
+	 */
+	public function testNullablePropertyFromNotEmptyScalar($value)
+	{
+		Assert::exception(function () use ($value) {
+			$entity = new UniversalProperties([
+				'value' => null,
+				'valueRequired' => [],
+				'valueNullable' => $value,
+				'valuesRequired' => [],
+			]);
+			$entity->valueNullable;
+		}, TypeError::class);
+	}
+
+
+	/**
+	 * @dataProvider provideEmptyScalarValues
+	 * @dataProvider provideNullValue
+	 * @dataProvider provideEmptyArray
+	 */
+	public function testNullablePropertyFromEmptyValue($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => [],
+			'valueNullable' => $value,
+			'valuesRequired' => [],
+		]);
+
+		Assert::null($entity->valueNullable);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyArray
+	 * @dataProvider provideEmptyArray
+	 * @dataProvider provideMinimalEntityData
+	 */
+	public function testRequiredCollectionFromArray($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => [],
+			'valuesRequired' => $value,
+		]);
+
+		Assert::type(Entries::class, $entity->valuesRequired);
+	}
+
+
+	/**
+	 * @dataProvider provideNullValue
+	 */
+	public function testRequiredCollectionFromNull($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => [],
+			'valuesRequired' => $value,
+		]);
+
+		Assert::null($entity->valuesRequired);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyScalarValues
+	 * @dataProvider provideEmptyScalarValues
+	 */
+	public function testRequiredCollectionFromScalar($value)
+	{
+		Assert::exception(function () use ($value) {
+			$entity = new UniversalProperties([
+				'value' => null,
+				'valueRequired' => [],
+				'valuesRequired' => $value,
+			]);
+			$entity->valuesRequired;
+		}, TypeError::class);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyArray
+	 * @dataProvider provideMinimalEntityData
+	 */
+	public function testNullableCollectionFromNotEmptyArray($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => [],
+			'valuesRequired' => [],
+			'valuesNullable' => $value,
+		]);
+
+		Assert::type(Entries::class, $entity->valuesNullable);
+	}
+
+
+	/**
+	 * @dataProvider provideNotEmptyScalarValues
+	 */
+	public function testNullableCollectionFromNotEmptyScalar($value)
+	{
+		Assert::exception(function () use ($value) {
+			$entity = new UniversalProperties([
+				'value' => null,
+				'valueRequired' => [],
+				'valuesRequired' => [],
+				'valuesNullable' => $value,
+			]);
+			$entity->valuesNullable;
+		}, TypeError::class);
+	}
+
+
+	/**
+	 * @dataProvider provideEmptyScalarValues
+	 * @dataProvider provideNullValue
+	 * @dataProvider provideEmptyArray
+	 */
+	public function testNullableCollectionFromEmptyValue($value)
+	{
+		$entity = new UniversalProperties([
+			'value' => null,
+			'valueRequired' => [],
+			'valuesRequired' => [],
+			'valuesNullable' => $value,
+		]);
+
+		Assert::null($entity->valuesNullable);
+	}
+
+
+	public function provideNotEmptyScalarValues()
+	{
+		return [
+			['dummy text'],
+			[10],
+			[1.5],
+			[true],
+		];
+	}
+
+
+	public function provideEmptyScalarValues()
+	{
+		return [
+			[''],
+			[0],
+			[0.0],
+			[false],
+		];
+	}
+
+
+	public function provideNullValue()
+	{
+		return [
+			[null],
+		];
+	}
+
+
+	public function provideNotEmptyArray()
+	{
+		return [
+			[['value-01', 'value-02']],
+		];
+	}
+
+
+	public function provideEmptyArray()
+	{
+		return [
+			[[]],
+		];
+	}
+
+
+	public function provideMinimalEntityData()
+	{
+		return [
+			[['valueRequired' => 'value', 'valuesRequired' => []]],
+		];
+	}
+
 
 	public function testFieldAccess()
 	{
@@ -56,7 +333,9 @@ class EntryTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider provideFalsyValues
+	 * @dataProvider provideEmptyScalarValues
+	 * @dataProvider provideNullValue
+	 * @dataProvider provideEmptyArray
 	 */
 	public function testEntriesAccessToNullableParameter($customer)
 	{
@@ -67,10 +346,8 @@ class EntryTest extends TestCase
 		Assert::null($order->customer);
 	}
 
-	/**
-	 * @dataProvider provideFalsyValues
-	 */
-	public function testEntriesClass($lastCollectionValue)
+
+	public function testEntriesClass()
 	{
 		$order = new Order([
 			'orderItems' => [
@@ -85,10 +362,6 @@ class EntryTest extends TestCase
 					'id' => 2,
 					'tags' => [],
 				],
-				[
-					'id' => 3,
-					'tags' => $lastCollectionValue,
-				],
 			],
 		], CustomEntries::class);
 
@@ -97,25 +370,10 @@ class EntryTest extends TestCase
 		$orderItems = $order->orderItems->toArray();
 		/** @var OrderItem $firstOrderItem */
 		$firstOrderItem = reset($orderItems);
-		/** @var OrderItem $lastOrderItem */
-		$lastOrderItem = end($orderItems);
 
 		Assert::type(CustomEntries::class, $firstOrderItem->tags);
-		Assert::type(CustomEntries::class, $lastOrderItem->tags);
 	}
 
-
-	public function provideFalsyValues()
-	{
-		return [
-			[[]],
-			[false],
-			[null],
-			[0],
-			[0.0],
-			[''],
-		];
-	}
 
 	/**
 	 * @dataProvider provideDataNullableCustomer
