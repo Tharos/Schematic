@@ -26,7 +26,7 @@ class Order extends Identified
 {
 
 	protected static $associations = [
-		'customer' => Customer::class,
+		'?customer' => Customer::class,
 		'orderItems[]' => OrderItem::class,
 	];
 
@@ -40,12 +40,14 @@ class OrderItem extends Identified
 {
 
 	protected static $associations = [
-		'tags[]' => Tag::class,
+		'?tags[]' => Tag::class,
 	];
 
 }
 
-
+/**
+ * @property-read string|null $name
+ */
 class Customer extends Identified
 {
 
@@ -88,8 +90,28 @@ class Book extends Identified
 
 	protected static $associations = [
 		'tag.' => Tag::class,
-		'customer.' => Customer::class,
+		'?customer.' => Customer::class,
 		'author.a_' => Author::class,
+	];
+
+}
+
+
+/**
+ * @property-read mixed $value
+ * @property-read UniversalProperties $valueRequired
+ * @property-read UniversalProperties|null $valueNullable
+ * @property-read UniversalProperties[] $valuesRequired
+ * @property-read UniversalProperties[]|null $valuesNullable
+ */
+class UniversalProperties extends Entry
+{
+
+	protected static $associations = [
+		'valueRequired' => UniversalProperties::class,
+		'?valueNullable' => UniversalProperties::class,
+		'valuesRequired[]' => UniversalProperties::class,
+		'?valuesNullable[]' => UniversalProperties::class,
 	];
 
 }

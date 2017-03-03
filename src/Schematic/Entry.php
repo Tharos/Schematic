@@ -11,6 +11,7 @@ class Entry
 	const INDEX_ENTRYCLASS = 0;
 	const INDEX_MULTIPLICITY = 1;
 	const INDEX_EMBEDDING = 2;
+	const INDEX_NULLABLE = 3;
 
 	/**
 	 * @var array
@@ -18,7 +19,7 @@ class Entry
 	protected static $associations = [];
 
 	/**
-	 * @var array entryClass => [INDEX_ENTRYCLASS => relatedEntryClass, INDEX_MULTIPLICITY => multiplicity, INDEX_EMBEDDING => embedding]
+	 * @var array entryClass => [INDEX_ENTRYCLASS => relatedEntryClass, INDEX_MULTIPLICITY => multiplicity, INDEX_EMBEDDING => embedding, INDEX_NULLABLE => null value allowed]
 	 */
 	private static $parsedAssociations = [];
 
@@ -64,18 +65,19 @@ class Entry
 
 		foreach (static::$associations as $association => $entryClass) {
 			$matches = [];
-			$result = preg_match('#^([^.[\]]+)(\.[^.[\]]*)?(\[\])?$#', $association, $matches);
+			$result = preg_match('#^(\?)?([^.[\]]+)(\.[^.[\]]*)?(\[\])?$#', $association, $matches);
 
-			if ($result === 0 || (!empty($matches[2]) && !empty($matches[3]))) {
+			if ($result === 0 || (!empty($matches[3]) && !empty($matches[4]))) {
 				throw new InvalidArgumentException('Invalid association definition given: ' . $association);
 			}
 
-			self::$parsedAssociations[$class][$matches[1]] = [
+			self::$parsedAssociations[$class][$matches[2]] = [
 				self::INDEX_ENTRYCLASS => $entryClass,
-				self::INDEX_MULTIPLICITY => !empty($matches[3]),
-				self::INDEX_EMBEDDING => !empty($matches[2]) ?
-					($matches[2] === '.' ? $matches[1] . '_' : substr($matches[2], 1)) :
+				self::INDEX_MULTIPLICITY => !empty($matches[4]),
+				self::INDEX_EMBEDDING => !empty($matches[3]) ?
+					($matches[3] === '.' ? $matches[2] . '_' : substr($matches[3], 1)) :
 					FALSE,
+				self::INDEX_NULLABLE => !empty($matches[1]),
 			];
 		}
 	}
@@ -101,7 +103,7 @@ class Entry
 			$this->readEmbeddedEntry($association[self::INDEX_EMBEDDING]) :
 			$this->readData($name);
 
-		if ($data === NULL) {
+		if ($data === NULL || ($association[self::INDEX_NULLABLE] && static::isEmpty($data))) {
 			return $this->data[$name] = NULL;
 		}
 
@@ -127,6 +129,16 @@ class Entry
 	public function __isset($name)
 	{
 		return isset($this->data[$name]);
+	}
+
+
+	/**
+	 * @param mixed $value
+	 * @return bool
+	 */
+	protected static function isEmpty($value)
+	{
+		return empty($value);
 	}
 
 
