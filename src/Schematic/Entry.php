@@ -107,7 +107,7 @@ class Entry
 			!$association[self::INDEX_MULTIPLICITY]
 			&& (
 				$data === NULL
-				|| ($association[self::INDEX_NULLABLE] && empty($data))
+				|| ($association[self::INDEX_NULLABLE] && static::isEmpty($data))
 			)
 		) {
 			return $this->data[$name] = NULL;
@@ -135,6 +135,16 @@ class Entry
 	public function __isset($name)
 	{
 		return isset($this->data[$name]);
+	}
+
+
+	/**
+	 * @param mixed $value
+	 * @return bool
+	 */
+	protected static function isEmpty($value)
+	{
+		return empty($value);
 	}
 
 
