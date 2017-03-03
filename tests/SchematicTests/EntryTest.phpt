@@ -56,7 +56,7 @@ class EntryTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider provideDataNullableRelation
+	 * @dataProvider provideFalsyValues
 	 */
 	public function testEntriesAccessToNullableParameter($customer)
 	{
@@ -67,21 +67,8 @@ class EntryTest extends TestCase
 		Assert::null($order->customer);
 	}
 
-
-	public function provideDataNullableRelation()
-	{
-		return [
-			[[]],
-			[false],
-			[null],
-			[0],
-			[0.0],
-			[''],
-		];
-	}
-
 	/**
-	 * @dataProvider provideDataNullableCollection
+	 * @dataProvider provideFalsyValues
 	 */
 	public function testEntriesClass($lastCollectionValue)
 	{
@@ -118,7 +105,7 @@ class EntryTest extends TestCase
 	}
 
 
-	public function provideDataNullableCollection()
+	public function provideFalsyValues()
 	{
 		return [
 			[[]],
