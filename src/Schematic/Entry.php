@@ -103,10 +103,13 @@ class Entry
 			$this->readEmbeddedEntry($association[self::INDEX_EMBEDDING]) :
 			$this->readData($name);
 
-		if (!$association[self::INDEX_MULTIPLICITY] && (
-			$data === NULL
-			|| ($association[self::INDEX_NULLABLE] && empty($data))
-		)) {
+		if (
+			!$association[self::INDEX_MULTIPLICITY]
+			&& (
+				$data === NULL
+				|| ($association[self::INDEX_NULLABLE] && empty($data))
+			)
+		) {
 			return $this->data[$name] = NULL;
 		}
 
