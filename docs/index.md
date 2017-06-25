@@ -362,7 +362,7 @@ Note the `@var` annotation helping an IDE to properly understand the values whil
 
 Besides implementing interfaces `Iterator` and `Countable` the class `Entries` contains some useful methods. Let's take a look at them.
 
-Original indexes are also available using `foreach` that is even if defined by `one-to-many` association: 
+Original indexes are also available using `foreach` even when defined by `one-to-many` association: 
 
 ```php
 /**
