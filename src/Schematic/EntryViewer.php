@@ -16,9 +16,7 @@ class EntryViewer
 	 */
 	public static function viewEntry($entry, Closure $converter)
 	{
-		$entry = call_user_func($converter, $entry);
-
-		return $entry !== NULL ? (object) $entry : NULL;
+		return self::convert($converter, $entry);
 	}
 
 
@@ -32,7 +30,7 @@ class EntryViewer
 		$result = [];
 
 		foreach ($entries as $index => $entry) {
-			$entry = self::viewEntry($entry, $singleEntryConverter);
+			$entry = self::convert($singleEntryConverter, $entry, $index);
 
 			if ($entry !== NULL) {
 				$result[$index] = $entry;
@@ -40,6 +38,20 @@ class EntryViewer
 		}
 
 		return $result;
+	}
+
+
+	/**
+	 * @param Closure $converter
+	 * @param mixed $entry
+	 * @param mixed|NULL $index
+	 * @return object|NULL
+	 */
+	private static function convert(Closure $converter, $entry, $index = NULL)
+	{
+		$entry = $index === NULL ? call_user_func($converter, $entry) : call_user_func($converter, $entry, $index);
+
+		return $entry !== NULL ? (object) $entry : NULL;
 	}
 
 }

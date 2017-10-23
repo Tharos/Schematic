@@ -106,6 +106,84 @@ class EntryTest extends TestCase
 		Assert::same('Doe', $book->author->surname);
 	}
 
+
+	public function testWakeUp()
+	{
+		$book = unserialize(file_get_contents(__DIR__ . '/serialized.data'));
+
+		Assert::type(Tag::class, $book->tag);
+		Assert::same('bestseller', $book->tag->name);
+
+		Assert::type(Customer::class, $book->customer);
+		Assert::same(20, $book->customer->id);
+
+		Assert::type(Author::class, $book->author);
+		Assert::same('John', $book->author->firstname);
+		Assert::same('Doe', $book->author->surname);
+	}
+
+
+	/**
+	 * It should allow using isset() and empty() functions to check state of the properties.
+	 * No need to assign them to variables before checking their value anymore.
+	 */
+	public function testIsset()
+	{
+		$author = new Author([
+			'firstname' => 'John',
+			'surname' => null,
+		]);
+
+		Assert::true(isset($author->firstname));
+		Assert::false(empty($author->firstname));
+
+		Assert::false(isset($author->surname));
+		Assert::true(empty($author->surname));
+
+		Assert::false(isset($author->id));
+		Assert::true(empty($author->id));
+	}
+
+
+	/**
+	 * It should make key available when iterating using foreach.
+	 */
+	public function testGetIndexInForeach()
+	{
+		$peter = 'Peter';
+		$joe = 'Joe';
+		$glenn = 'Glenn';
+		$ids = [
+			$peter => 3,
+			$joe => 'foo',
+			$glenn => 9,
+		];
+		$data = [
+			'indexedInformation' => [
+				$ids[$peter] => [
+					'firstname' => $peter,
+					'lastname' => 'Griffin',
+				],
+				$ids[$joe] => [
+					'firstname' => $joe,
+					'lastname' => 'Swanson',
+				],
+				$ids[$glenn] => [
+					'firstname' => $glenn,
+					'lastname' => 'Quagmire',
+				],
+			],
+		];
+
+		$registry = new Registry($data);
+
+		foreach ($registry->indexedInformation as $key => $person) {
+			Assert::same($ids[$person->firstname], $key);
+		}
+
+		Assert::count(count($ids), $registry->indexedInformation);
+	}
+
 }
 
 

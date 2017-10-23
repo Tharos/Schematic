@@ -93,6 +93,32 @@ class EntryViewerTest extends TestCase
 		], $customers);
 	}
 
+
+	public function testViewEntries_indexes()
+	{
+		$customersNotes = [
+			5 => 'Fifth customer',
+		];
+
+		$customers = new Entries([
+			3 => ['id' => 1],
+			4 => ['id' => 2],
+			5 => ['id' => 3],
+		], Customer::class);
+
+		$customers = EntryViewer::viewEntries($customers, function (Customer $customer, $index) use ($customersNotes) {
+			return $customer->id === 2 ? NULL : [
+				'id' => $customer->id,
+				'note' => array_key_exists($index, $customersNotes) ? $customersNotes[$index] : NULL,
+			];
+		});
+
+		Assert::equal([
+			3 => (object) ['id' => 1, 'note' => NULL],
+			5 => (object) ['id' => 3, 'note' => 'Fifth customer'],
+		], $customers);
+	}
+
 }
 
 
