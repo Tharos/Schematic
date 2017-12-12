@@ -131,6 +131,15 @@ class Entry
 
 
 	/**
+	 * @return array
+	 */
+	public function getData()
+	{
+		return $this->data;
+	}
+
+
+	/**
 	 * @param string $prefix
 	 * @return array|NULL
 	 */

@@ -131,7 +131,7 @@ class EntryTest extends TestCase
 	{
 		$author = new Author([
 			'firstname' => 'John',
-			'surname' => null,
+			'surname' => NULL,
 		]);
 
 		Assert::true(isset($author->firstname));
@@ -182,6 +182,23 @@ class EntryTest extends TestCase
 		}
 
 		Assert::count(count($ids), $registry->indexedInformation);
+	}
+
+
+	public function testGetData()
+	{
+		$data = [
+			'id' => 12,
+			'title' => 'PHP: The Bad Parts',
+			'tag_name' => 'bestseller',
+			'customer_id' => 20,
+			'a_firstname' => 'John',
+			'a_surname' => 'Doe',
+		];
+
+		$book = new Book($data);
+
+		Assert::same($data, $book->getData());
 	}
 
 }
