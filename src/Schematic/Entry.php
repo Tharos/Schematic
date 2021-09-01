@@ -183,7 +183,7 @@ class Entry implements JsonSerializable
 		}
 	}
 	
-	public function jsonSerialize(): array
+	public function jsonSerialize()
 	{
 		return $this->data;
 	}
