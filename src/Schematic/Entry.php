@@ -3,9 +3,9 @@
 namespace Schematic;
 
 use InvalidArgumentException;
+use JsonSerializable;
 
-
-class Entry
+class Entry implements JsonSerializable
 {
 
 	const INDEX_ENTRYCLASS = 0;
@@ -181,6 +181,11 @@ class Entry
 		if (!array_key_exists($calledClass = get_called_class(), self::$parsedAssociations)) {
 			self::parseAssociations($calledClass);
 		}
+	}
+	
+	public function jsonSerialize()
+	{
+		return $this->data;
 	}
 
 }
