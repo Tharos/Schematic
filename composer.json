@@ -8,6 +8,9 @@
 			"email": "v.kohout@gmail.com"
 		}
 	],
+	"require": {
+		"php": ">=5.6"
+	},
 	"require-dev": {
 		"nette/tester": "~1.6"
 	},
